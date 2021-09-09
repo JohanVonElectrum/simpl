@@ -1,0 +1,6 @@
+a := 0
+
+if a = 0
+then b := 1
+else b := 2
+
