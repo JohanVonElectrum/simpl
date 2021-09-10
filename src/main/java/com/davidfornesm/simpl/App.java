@@ -58,7 +58,7 @@ public class App
 
         System.out.println(program);
         State finalState = program.eval(new State());
-        System.out.println(finalState.lookup("result"));
+        System.out.println("result := " + finalState.lookup("result"));
     }
 
     static void error(int line, String message) {
