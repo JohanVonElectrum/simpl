@@ -74,6 +74,8 @@ public class Parser {
                 booleanExp = new BooleanExp.EqualExp(arithmeticExp, arithmeticExp());
             } else if (match(LESS_EQUAL)) {
                 booleanExp = new BooleanExp.LeqExp(arithmeticExp, arithmeticExp());
+            } else if (match(MORE)) {
+                booleanExp = new BooleanExp.BiggerThanExp(arithmeticExp, arithmeticExp());
             }
         }
         if (booleanExp == null) throw new RuntimeException();
@@ -106,8 +108,11 @@ public class Parser {
         return false;
     }
 
-    private Token consume(Token.TokenType type, String message) {
-        if (check(type)) return advance();
+    private void consume(Token.TokenType type, String message) {
+        if (check(type)) {
+            advance();
+            return;
+        }
         throw new RuntimeException(message);
     }
 
@@ -116,9 +121,8 @@ public class Parser {
         return peek().type == type;
     }
 
-    private Token advance() {
+    private void advance() {
         if(!isAtEnd()) current++;
-        return previous();
     }
 
     private boolean isAtEnd() {

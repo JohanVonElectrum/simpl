@@ -58,6 +58,7 @@ public class Scanner {
                 break;
             case '=':
                 addToken(EQUAL);
+                break;
             case ':':
                 if (match('=')) {
                     addToken(WALRUS);
@@ -67,6 +68,9 @@ public class Scanner {
                 if (match('=')) {
                     addToken(LESS_EQUAL);
                 }
+                break;
+            case '>':
+                addToken(MORE);
                 break;
             case ' ':
             case '\r':

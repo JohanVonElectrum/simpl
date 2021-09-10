@@ -5,7 +5,7 @@ import java.util.Objects;
 public class Token {
     public enum TokenType {
         NUMBER, IDENTIFIER, PLUS, MINUS, STAR,
-        TRUE, FALSE, EQUAL, LESS_EQUAL, NOT, OR,
+        TRUE, FALSE, EQUAL, LESS_EQUAL, MORE, NOT, OR,
         SKIP, WALRUS, SEMICOLON, IF, THEN, ELSE, WHILE, DO,
         END,
         EOF
