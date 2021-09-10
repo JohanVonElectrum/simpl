@@ -21,20 +21,17 @@ public class Parser {
     }
 
     private ProgramStatement programStatement() {
-        if (match(SKIP)) return skipStatement();
-        if (match(IDENTIFIER)) return assignmentStatement();
-        if (match(IF)) return ifStatement();
-        if (match(WHILE)) return whileStatement();
-
-        throw new RuntimeException("failed to parse token source.");
+        ProgramStatement programStatement = skipStatement();
+        if (match(SKIP)) programStatement = skipStatement();
+        if (match(IDENTIFIER)) programStatement = assignmentStatement();
+        if (match(IF)) programStatement =  ifStatement();
+        if (match(WHILE)) programStatement = whileStatement();
+        if (match(SEMICOLON)) programStatement = new ProgramStatement.SequenceStmt(programStatement, programStatement());
+        return programStatement;
     }
 
     private ProgramStatement skipStatement() {
-        ProgramStatement.EmptyStmt emptyStmt = new ProgramStatement.EmptyStmt();
-        if (match(SEMICOLON)) {
-            return new ProgramStatement.SequenceStmt(emptyStmt, programStatement());
-        }
-        return emptyStmt;
+        return new ProgramStatement.EmptyStmt();
     }
 
     private ProgramStatement assignmentStatement() {
@@ -42,11 +39,7 @@ public class Parser {
         String name = ident.lexeme;
         consume(WALRUS, "expected walrus operator.");
         ArithmeticExp expr = arithmeticExp();
-        ProgramStatement.AssignmentStmt assignmentStmt = new ProgramStatement.AssignmentStmt(name, expr);
-        if (match(SEMICOLON)) {
-            return new ProgramStatement.SequenceStmt(assignmentStmt, programStatement());
-        }
-        return assignmentStmt;
+        return new ProgramStatement.AssignmentStmt(name, expr);
     }
 
     private ProgramStatement ifStatement() {
@@ -57,9 +50,6 @@ public class Parser {
         ProgramStatement ifFalse = programStatement();
         ProgramStatement.IfThenElseStmt ifThenElseStmt = new ProgramStatement.IfThenElseStmt(booleanExp, ifTrue, ifFalse);
         consume(END, "expected end after else.");
-        if (match(SEMICOLON)) {
-            return new ProgramStatement.SequenceStmt(ifThenElseStmt, programStatement());
-        }
         return ifThenElseStmt;
 
     }
@@ -70,9 +60,6 @@ public class Parser {
         ProgramStatement programStatement = programStatement();
         ProgramStatement.WhileStmt whileStmt = new ProgramStatement.WhileStmt(booleanExp, programStatement);
         consume(END, "expected end after while");
-        if (match(SEMICOLON)) {
-            return new ProgramStatement.SequenceStmt(whileStmt, programStatement());
-        }
         return whileStmt;
     }
 
