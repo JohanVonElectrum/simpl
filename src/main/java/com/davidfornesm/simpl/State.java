@@ -3,7 +3,7 @@ package com.davidfornesm.simpl;
 import java.util.HashMap;
 
 class State {
-    private HashMap<String, Integer> state;
+    private final HashMap<String, Integer> state;
 
     public State() {
         state = new HashMap<>();
