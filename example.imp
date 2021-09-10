@@ -5,7 +5,21 @@ then skip
 else skip
 end;
 
-if n = 6
-then result := 10
+if n = 4 || 4 + 3 = 8 || !false
+then result := 100
 else skip
+end;
+
+while result <= 200
+do
+    result := result + 20;
+    if 150 <= result
+    then result := 1500
+    else
+    end;
+end;
+
+if false || 3 = 1 + 2
+then result := 123
+else
 end

@@ -23,9 +23,9 @@ public class Parser {
     private ProgramStatement programStatement() {
         ProgramStatement programStatement = skipStatement();
         if (match(SKIP)) programStatement = skipStatement();
-        if (match(IDENTIFIER)) programStatement = assignmentStatement();
-        if (match(IF)) programStatement =  ifStatement();
-        if (match(WHILE)) programStatement = whileStatement();
+        else if (match(IDENTIFIER)) programStatement = assignmentStatement();
+        else if (match(IF)) programStatement =  ifStatement();
+        else if (match(WHILE)) programStatement = whileStatement();
         if (match(SEMICOLON)) programStatement = new ProgramStatement.SequenceStmt(programStatement, programStatement());
         return programStatement;
     }
@@ -72,7 +72,7 @@ public class Parser {
                 return new BooleanExp.TrueExp();
             }
         }
-        if (match(FALSE)) {
+        else if (match(FALSE)) {
             if (match(OR)) {
                 BooleanExp booleanExp = booleanExp();
                 return new BooleanExp.OrExp(new BooleanExp.FalseExp(), booleanExp);
@@ -80,30 +80,30 @@ public class Parser {
                 return new BooleanExp.FalseExp();
             }
         }
-        if (match(NOT)) {
-            BooleanExp booleanExp = booleanExp();
+        else if (match(NOT)) {
+            BooleanExp booleanExp = new BooleanExp.NotExp(booleanExp());
             if (match(OR)) {
                 return new BooleanExp.OrExp(booleanExp, booleanExp());
             }
             return booleanExp;
-        }
-        ArithmeticExp arithmeticExp = arithmeticExp();
-        if (match(EQUAL)) {
-            ArithmeticExp arithmeticExp2 = arithmeticExp();
-            BooleanExp.EqualExp equalExp = new BooleanExp.EqualExp(arithmeticExp, arithmeticExp2);
-            if (match(OR)) {
-                return new BooleanExp.OrExp(equalExp, booleanExp());
-            }
-            return equalExp;
+        } else {
+            ArithmeticExp arithmeticExp = arithmeticExp();
+            if (match(EQUAL)) {
+                ArithmeticExp arithmeticExp2 = arithmeticExp();
+                BooleanExp.EqualExp equalExp = new BooleanExp.EqualExp(arithmeticExp, arithmeticExp2);
+                if (match(OR)) {
+                    return new BooleanExp.OrExp(equalExp, booleanExp());
+                }
+                return equalExp;
 
-        }
-        if (match(LESS_EQUAL)) {
-            BooleanExp.LeqExp leqExp = new BooleanExp.LeqExp(arithmeticExp, arithmeticExp());
-            if (match(OR)) {
-                return new BooleanExp.OrExp(leqExp, booleanExp());
             }
-            return leqExp;
-
+            if (match(LESS_EQUAL)) {
+                BooleanExp.LeqExp leqExp = new BooleanExp.LeqExp(arithmeticExp, arithmeticExp());
+                if (match(OR)) {
+                    return new BooleanExp.OrExp(leqExp, booleanExp());
+                }
+                return leqExp;
+            }
         }
 
         throw new RuntimeException();
@@ -136,10 +136,6 @@ public class Parser {
             }
         }
         throw new RuntimeException();
-    }
-
-    private ArithmeticExp numericExp() {
-        return new ArithmeticExp.NumericExp((Integer) previous().literal);
     }
 
     private boolean match(Token.TokenType... types) {

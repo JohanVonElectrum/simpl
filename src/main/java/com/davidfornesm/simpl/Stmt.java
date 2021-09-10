@@ -7,7 +7,6 @@ abstract class ProgramStatement {
 
         public State eval(State s)
         {
-            System.out.println("SKIP!");
             return s;
         }
     }

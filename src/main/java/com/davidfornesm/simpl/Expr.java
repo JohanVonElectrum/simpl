@@ -5,7 +5,7 @@ abstract class ArithmeticExp {
     public abstract int eval(State s); // <a,s> => n
 
     static class VariableExp extends ArithmeticExp {
-        private String name; // a variable is a numeric index
+        private final String name; // a variable is a numeric index
 
         public VariableExp(String index)
         { name = index; }
@@ -16,7 +16,7 @@ abstract class ArithmeticExp {
     }
 
     static class NumericExp extends ArithmeticExp {
-        private int n;
+        private final int n;
 
         public NumericExp(int m)
         { n = m; }
@@ -26,7 +26,8 @@ abstract class ArithmeticExp {
     }
 
     static class AdditionExp extends ArithmeticExp {
-        private ArithmeticExp a1,a2;
+        private final ArithmeticExp a1;
+        private final ArithmeticExp a2;
 
         public AdditionExp(ArithmeticExp e1, ArithmeticExp e2)
         { a1 = e1; a2 = e2; }
@@ -36,7 +37,8 @@ abstract class ArithmeticExp {
     }
 
     static class SubtractionExp extends ArithmeticExp {
-        private ArithmeticExp a1,a2;
+        private final ArithmeticExp a1;
+        private final ArithmeticExp a2;
 
         public SubtractionExp(ArithmeticExp e1, ArithmeticExp e2)
         { a1 = e1; a2 = e2; }
@@ -46,7 +48,8 @@ abstract class ArithmeticExp {
     }
 
     static class ProductExp extends ArithmeticExp {
-        private ArithmeticExp a1,a2;
+        private final ArithmeticExp a1;
+        private final ArithmeticExp a2;
 
         public ProductExp(ArithmeticExp e1, ArithmeticExp e2)
         { a1 = e1; a2 = e2; }
@@ -77,7 +80,8 @@ abstract class BooleanExp {
     }
 
     static class EqualExp extends BooleanExp {
-        private ArithmeticExp a1,a2;
+        private final ArithmeticExp a1;
+        private final ArithmeticExp a2;
 
         public EqualExp(ArithmeticExp e1, ArithmeticExp e2)
         { a1 = e1; a2 = e2; }
@@ -87,7 +91,8 @@ abstract class BooleanExp {
     }
 
     static class LeqExp extends BooleanExp {
-        private ArithmeticExp a1,a2;
+        private final ArithmeticExp a1;
+        private final ArithmeticExp a2;
 
         public LeqExp(ArithmeticExp e1, ArithmeticExp e2)
         { a1 = e1; a2 = e2; }
@@ -108,7 +113,7 @@ abstract class BooleanExp {
 
     static class NotExp extends BooleanExp {
 
-        private BooleanExp b;
+        private final BooleanExp b;
 
         public NotExp(BooleanExp e)
         { b = e; }
@@ -119,7 +124,8 @@ abstract class BooleanExp {
 
     static class OrExp extends BooleanExp {
 
-        private BooleanExp b1,b2;
+        private final BooleanExp b1;
+        private final BooleanExp b2;
 
         public OrExp(BooleanExp e1, BooleanExp e2)
         { b1 = e1; b2 = e2; }
