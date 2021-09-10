@@ -1,6 +1,11 @@
-a := 0
+n := 6;
 
-if a = 0
-then b := 1
-else b := 2
+if n = 6
+then skip
+else skip
+end;
 
+if n = 6
+then result := 10
+else skip
+end

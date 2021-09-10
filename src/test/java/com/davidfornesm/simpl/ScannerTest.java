@@ -16,7 +16,7 @@ public class ScannerTest extends TestCase {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         List<Token> expected_tokens = new ArrayList<>();
-        expected_tokens.add(new Token(NUMBER, "123", 123.0, 1));
+        expected_tokens.add(new Token(NUMBER, "123", 123, 1));
         expected_tokens.add(new Token(IDENTIFIER, "abc", null, 1));
         expected_tokens.add(new Token(PLUS, "+", null, 1));
         expected_tokens.add(new Token(MINUS, "-", null, 1));

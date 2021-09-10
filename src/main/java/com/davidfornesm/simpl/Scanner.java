@@ -22,6 +22,7 @@ public class Scanner {
         keywords.put("else", ELSE);
         keywords.put("while", WHILE);
         keywords.put("do", DO);
+        keywords.put("end", END);
     }
 
     int start = 0;
@@ -122,7 +123,7 @@ public class Scanner {
             advance();
             while (isDigit(peek())) advance();
         }
-        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+        addToken(NUMBER, Integer.parseInt(source.substring(start, current)));
     }
 
     private void identifier() {

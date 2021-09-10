@@ -50,10 +50,15 @@ public class App
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-
         for (Token token : tokens) {
             System.out.println(token);
         }
+        Parser parser = new Parser(tokens);
+        ProgramStatement program = parser.parse();
+
+        System.out.println(program);
+        State finalState = program.eval(new State());
+        System.out.println(finalState.lookup("result"));
     }
 
     static void error(int line, String message) {
