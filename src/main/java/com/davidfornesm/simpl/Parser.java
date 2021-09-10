@@ -64,78 +64,36 @@ public class Parser {
     }
 
     private BooleanExp booleanExp() {
-        if (match(TRUE)) {
-            if (match(OR)) {
-                BooleanExp booleanExp = booleanExp();
-                return new BooleanExp.OrExp(new BooleanExp.TrueExp(), booleanExp);
-            } else {
-                return new BooleanExp.TrueExp();
-            }
-        }
-        else if (match(FALSE)) {
-            if (match(OR)) {
-                BooleanExp booleanExp = booleanExp();
-                return new BooleanExp.OrExp(new BooleanExp.FalseExp(), booleanExp);
-            } else {
-                return new BooleanExp.FalseExp();
-            }
-        }
-        else if (match(NOT)) {
-            BooleanExp booleanExp = new BooleanExp.NotExp(booleanExp());
-            if (match(OR)) {
-                return new BooleanExp.OrExp(booleanExp, booleanExp());
-            }
-            return booleanExp;
-        } else {
+        BooleanExp booleanExp = null;
+        if (match(TRUE)) booleanExp = new BooleanExp.TrueExp();
+        else if (match(FALSE)) booleanExp = new BooleanExp.FalseExp();
+        else if (match(NOT)) booleanExp = new BooleanExp.NotExp(booleanExp());
+        else {
             ArithmeticExp arithmeticExp = arithmeticExp();
             if (match(EQUAL)) {
-                ArithmeticExp arithmeticExp2 = arithmeticExp();
-                BooleanExp.EqualExp equalExp = new BooleanExp.EqualExp(arithmeticExp, arithmeticExp2);
-                if (match(OR)) {
-                    return new BooleanExp.OrExp(equalExp, booleanExp());
-                }
-                return equalExp;
-
-            }
-            if (match(LESS_EQUAL)) {
-                BooleanExp.LeqExp leqExp = new BooleanExp.LeqExp(arithmeticExp, arithmeticExp());
-                if (match(OR)) {
-                    return new BooleanExp.OrExp(leqExp, booleanExp());
-                }
-                return leqExp;
+                booleanExp = new BooleanExp.EqualExp(arithmeticExp, arithmeticExp());
+            } else if (match(LESS_EQUAL)) {
+                booleanExp = new BooleanExp.LeqExp(arithmeticExp, arithmeticExp());
             }
         }
-
-        throw new RuntimeException();
+        if (booleanExp == null) throw new RuntimeException();
+        if (match(OR)) booleanExp = new BooleanExp.OrExp(booleanExp, booleanExp());
+        return booleanExp;
     }
 
     private ArithmeticExp arithmeticExp() {
-        if (match(NUMBER)) {
-            ArithmeticExp arithmeticExp = new ArithmeticExp.NumericExp((Integer) previous().literal);
-            if (match(PLUS)) {
-                return new ArithmeticExp.AdditionExp(arithmeticExp,
-                        arithmeticExp());
-            } else if (match(MINUS)) {
-                return new ArithmeticExp.SubtractionExp(arithmeticExp, arithmeticExp());
-            } else if (match(STAR)) {
-                return new ArithmeticExp.ProductExp(arithmeticExp, arithmeticExp());
-            }
-            return arithmeticExp;
-        }
-        if (match(IDENTIFIER)) {
-            ArithmeticExp arithmeticExp = new ArithmeticExp.VariableExp(previous().lexeme);
-            if (match(PLUS)) {
-                return new ArithmeticExp.AdditionExp(arithmeticExp, arithmeticExp());
-            }  else if (match(MINUS)) {
-                return new ArithmeticExp.SubtractionExp(arithmeticExp, arithmeticExp());
-            } else if (match(STAR)) {
-                return new ArithmeticExp.ProductExp(arithmeticExp, arithmeticExp());
-            }
-            else {
-                return arithmeticExp;
+        ArithmeticExp arithmeticExp = null;
+        if (match(NUMBER)) arithmeticExp = new ArithmeticExp.NumericExp((Integer) previous().literal);
+        else if (match(IDENTIFIER)) arithmeticExp = new ArithmeticExp.VariableExp(previous().lexeme);
+        if (arithmeticExp == null) throw new RuntimeException();
+        if (match(PLUS, MINUS, STAR)) {
+            switch (previous().type) {
+                case PLUS: arithmeticExp = new ArithmeticExp.AdditionExp(arithmeticExp, arithmeticExp()); break;
+                case MINUS: arithmeticExp =  new ArithmeticExp.SubtractionExp(arithmeticExp, arithmeticExp()); break;
+                case STAR: arithmeticExp = new ArithmeticExp.ProductExp(arithmeticExp, arithmeticExp()); break;
             }
         }
-        throw new RuntimeException();
+        return arithmeticExp;
     }
 
     private boolean match(Token.TokenType... types) {
