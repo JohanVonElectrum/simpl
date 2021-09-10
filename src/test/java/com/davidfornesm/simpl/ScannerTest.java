@@ -11,12 +11,12 @@ public class ScannerTest extends TestCase {
 
     public void testScanTokens() {
         String source = "123 abc + - * true false " +
-                "= <= ! || skip := ; if then else " +
+                "= <= > ! || skip := ; if then else " +
                 "while do";
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         List<Token> expected_tokens = new ArrayList<>();
-        expected_tokens.add(new Token(NUMBER, "123", 123.0, 1));
+        expected_tokens.add(new Token(NUMBER, "123", 123, 1));
         expected_tokens.add(new Token(IDENTIFIER, "abc", null, 1));
         expected_tokens.add(new Token(PLUS, "+", null, 1));
         expected_tokens.add(new Token(MINUS, "-", null, 1));
@@ -25,6 +25,7 @@ public class ScannerTest extends TestCase {
         expected_tokens.add(new Token(FALSE, "false", null, 1));
         expected_tokens.add(new Token(EQUAL, "=", null, 1));
         expected_tokens.add(new Token(LESS_EQUAL, "<=", null, 1));
+        expected_tokens.add(new Token(MORE, ">", null, 1));
         expected_tokens.add(new Token(NOT, "!", null, 1));
         expected_tokens.add(new Token(OR, "||", null, 1));
         expected_tokens.add(new Token(SKIP, "skip", null, 1));

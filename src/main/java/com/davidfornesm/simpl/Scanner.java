@@ -22,6 +22,7 @@ public class Scanner {
         keywords.put("else", ELSE);
         keywords.put("while", WHILE);
         keywords.put("do", DO);
+        keywords.put("end", END);
     }
 
     int start = 0;
@@ -57,6 +58,7 @@ public class Scanner {
                 break;
             case '=':
                 addToken(EQUAL);
+                break;
             case ':':
                 if (match('=')) {
                     addToken(WALRUS);
@@ -66,6 +68,9 @@ public class Scanner {
                 if (match('=')) {
                     addToken(LESS_EQUAL);
                 }
+                break;
+            case '>':
+                addToken(MORE);
                 break;
             case ' ':
             case '\r':
@@ -122,7 +127,7 @@ public class Scanner {
             advance();
             while (isDigit(peek())) advance();
         }
-        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+        addToken(NUMBER, Integer.parseInt(source.substring(start, current)));
     }
 
     private void identifier() {
