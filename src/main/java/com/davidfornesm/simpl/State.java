@@ -3,11 +3,10 @@ package com.davidfornesm.simpl;
 import java.util.HashMap;
 
 class State {
-    private HashMap<String, Integer> state = new HashMap<>();
-    // private int state [ ]; // Variables are treated as indices to this vector; this simplifies the treatment
+    private HashMap<String, Integer> state;
 
-    public State()
-    {  state = new HashMap<>();
+    public State() {
+        state = new HashMap<>();
     }
 
     int lookup(String name) {

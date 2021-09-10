@@ -7,6 +7,7 @@ abstract class ProgramStatement {
     static class EmptyStmt extends ProgramStatement {
 
         public State eval(State s) {
+            System.out.println("SKIP");
             return s;
         }
     }
