@@ -85,7 +85,7 @@ public class Scanner {
                 } else if (isAlpha(c)) {
                     identifier();
                 } else {
-                    App.error(line, "Unexpected character.");
+                    App.error(line, "Unexpected character: " + c + ".");
                 }
                 break;
         }
