@@ -9,7 +9,7 @@ class State {
         state = new HashMap<>();
     }
 
-    int lookup(String name) {
+    Integer lookup(String name) {
         return state.get(name);
     }
 

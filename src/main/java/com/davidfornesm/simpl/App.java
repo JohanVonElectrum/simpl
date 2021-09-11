@@ -29,6 +29,7 @@ public class App
     }
 
     private static void runPrompt() throws IOException {
+        State state = new State();
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
 
@@ -36,18 +37,23 @@ public class App
             System.out.print(">> ");
             String line = reader.readLine();
             if (line == null) break;
-            run(line);
+            try {
+                run(line, state);
+            } catch (RuntimeException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
         }
     }
 
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), null);
         if (hadError) System.exit(65);
     }
 
-    private static void run(String source) {
+    private static void run(String source, State state) {
+        if (state == null) state = new State();
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         for (Token token : tokens) {
@@ -57,8 +63,9 @@ public class App
         ProgramStatement program = parser.parse();
 
         System.out.println(program);
-        State finalState = program.eval(new State());
-        System.out.println("result := " + finalState.lookup("result"));
+        State finalState = program.eval(state);
+        Integer result = finalState.lookup("result");
+        System.out.println("result := " + result);
     }
 
     static void error(int line, String message) {

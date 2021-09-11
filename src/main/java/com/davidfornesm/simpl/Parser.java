@@ -78,7 +78,7 @@ public class Parser {
                 booleanExp = new BooleanExp.BiggerThanExp(arithmeticExp, arithmeticExp());
             }
         }
-        if (booleanExp == null) throw new RuntimeException();
+        if (booleanExp == null) throw new RuntimeException("expected boolean expression.");
         if (match(OR)) booleanExp = new BooleanExp.OrExp(booleanExp, booleanExp());
         return booleanExp;
     }
@@ -87,7 +87,7 @@ public class Parser {
         ArithmeticExp arithmeticExp = null;
         if (match(NUMBER)) arithmeticExp = new ArithmeticExp.NumericExp((Integer) previous().literal);
         else if (match(IDENTIFIER)) arithmeticExp = new ArithmeticExp.VariableExp(previous().lexeme);
-        if (arithmeticExp == null) throw new RuntimeException();
+        if (arithmeticExp == null) throw new RuntimeException("expected arithmetic expression.");
         if (match(PLUS, MINUS, STAR)) {
             switch (previous().type) {
                 case PLUS: arithmeticExp = new ArithmeticExp.AdditionExp(arithmeticExp, arithmeticExp()); break;

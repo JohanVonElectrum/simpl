@@ -28,6 +28,6 @@ public class ParserTest extends TestCase {
         ProgramStatement program = parser.parse();
         State state = new State();
         State root = program.eval(state);
-        assertEquals(29, root.lookup("result"));
+        assertEquals(Integer.valueOf(29), root.lookup("result"));
     }
 }
