@@ -11,6 +11,11 @@ abstract class ArithmeticExp {
             name = index;
         }
 
+        @Override
+        public String toString() {
+            return "(var: " + name + ")";
+        }
+
         public int eval(State s) {
             return s.lookup(name);
         }
@@ -21,6 +26,11 @@ abstract class ArithmeticExp {
 
         public NumericExp(int m) {
             n = m;
+        }
+
+        @Override
+        public String toString() {
+            return "(num: " + n + ")";
         }
 
         public int eval(State s) {
@@ -37,6 +47,11 @@ abstract class ArithmeticExp {
             a2 = e2;
         }
 
+        @Override
+        public String toString() {
+            return "(add: "  + a1.toString() + ", " + a2.toString() + ")";
+        }
+
         public int eval(State s) {
             return a1.eval(s) + a2.eval(s);
         }
@@ -51,6 +66,11 @@ abstract class ArithmeticExp {
             a2 = e2;
         }
 
+        @Override
+        public String toString() {
+            return "(sub: " + a1.toString() + ", " + a2.toString() + ")";
+        }
+
         public int eval(State s) {
             return a1.eval(s) - a2.eval(s);
         }
@@ -63,6 +83,11 @@ abstract class ArithmeticExp {
         public ProductExp(ArithmeticExp e1, ArithmeticExp e2) {
             a1 = e1;
             a2 = e2;
+        }
+
+        @Override
+        public String toString() {
+            return "(prod: " + a1.toString() + ", " + a2.toString() + ")";
         }
 
         public int eval(State s) {
@@ -81,12 +106,22 @@ abstract class BooleanExp {
 
     static class TrueExp extends BooleanExp {
 
+        @Override
+        public String toString() {
+            return "(true)";
+        }
+
         public boolean eval(State s) {
             return true;
         }
     }
 
     static class FalseExp extends BooleanExp {
+
+        @Override
+        public String toString() {
+            return "(false)";
+        }
 
         public boolean eval(State s) {
             return false;
@@ -100,6 +135,11 @@ abstract class BooleanExp {
         public EqualExp(ArithmeticExp e1, ArithmeticExp e2) {
             a1 = e1;
             a2 = e2;
+        }
+
+        @Override
+        public String toString() {
+            return "(equal: " + a1.toString() +  ", " + a2.toString() + ")";
         }
 
         public boolean eval(State s) {
@@ -116,6 +156,11 @@ abstract class BooleanExp {
             a2 = e2;
         }
 
+        @Override
+        public String toString() {
+            return "(leq: " + a1.toString() + ", " + a2.toString() + ")";
+        }
+
         public boolean eval(State s) {
             return a1.eval(s) <= a2.eval(s);
         }
@@ -128,6 +173,11 @@ abstract class BooleanExp {
         public BiggerThanExp(ArithmeticExp e1, ArithmeticExp e2) {
             a1 = e1;
             a2 = e2;
+        }
+
+        @Override
+        public String toString() {
+            return "(bigger: " + a1.toString() + ", " + a2.toString() + ")";
         }
 
         public boolean eval(State s) {
@@ -143,6 +193,11 @@ abstract class BooleanExp {
             b = e;
         }
 
+        @Override
+        public String toString() {
+            return "(not: " + b.toString() + ";";
+        }
+
         public boolean eval(State s) {
             return !(b.eval(s));
         }
@@ -156,6 +211,11 @@ abstract class BooleanExp {
         public OrExp(BooleanExp e1, BooleanExp e2) {
             b1 = e1;
             b2 = e2;
+        }
+
+        @Override
+        public String toString() {
+            return "(or: " + b1.toString() + ", " + b2.toString() + ")";
         }
 
         public boolean eval(State s) {

@@ -7,8 +7,12 @@ abstract class ProgramStatement {
     static class EmptyStmt extends ProgramStatement {
 
         public State eval(State s) {
-            System.out.println("SKIP");
             return s;
+        }
+
+        @Override
+        public String toString() {
+            return "(skip)";
         }
     }
 
@@ -21,6 +25,11 @@ abstract class ProgramStatement {
         public AssignmentStmt(String name, ArithmeticExp e) {
             x = name;
             a = e;
+        }
+
+        @Override
+        public String toString() {
+            return "(assign: " + x + ", " + a.toString() + ")";
         }
 
         public State eval(State s) {
@@ -37,6 +46,11 @@ abstract class ProgramStatement {
         public SequenceStmt(ProgramStatement s1, ProgramStatement s2) {
             c1 = s1;
             c2 = s2;
+        }
+
+        @Override
+        public String toString() {
+            return "(seq: " + c1.toString() + ", " + c2.toString() + ")";
         }
 
         public State eval(State s) {
@@ -56,6 +70,11 @@ abstract class ProgramStatement {
             c2 = s2;
         }
 
+        @Override
+        public String toString() {
+            return "(if: " + b.toString() + ", " + c1.toString() + ", " + c2.toString() + ")";
+        }
+
         public State eval(State s) {
             if (b.eval(s)) return c1.eval(s);
             else return c2.eval(s);
@@ -70,6 +89,11 @@ abstract class ProgramStatement {
         public WhileStmt(BooleanExp e, ProgramStatement s) {
             b = e;
             c = s;
+        }
+
+        @Override
+        public String toString() {
+            return "(while: " + b.toString() + ", " + c.toString() + ")" ;
         }
 
         public State eval(State s) {

@@ -62,7 +62,7 @@ public class App
         Parser parser = new Parser(tokens);
         ProgramStatement program = parser.parse();
 
-        System.out.println(program);
+        System.out.println("program: " + program.toString());
         State finalState = program.eval(state);
         Integer result = finalState.lookup("result");
         System.out.println("result := " + result);

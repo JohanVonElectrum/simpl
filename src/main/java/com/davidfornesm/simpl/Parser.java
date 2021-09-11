@@ -17,7 +17,10 @@ public class Parser {
     }
 
     private ProgramStatement program() {
-        return programStatement();
+        ProgramStatement programStatement = programStatement();
+        if (!(programStatement instanceof ProgramStatement.SequenceStmt))
+            programStatement = new ProgramStatement.SequenceStmt(programStatement, new ProgramStatement.EmptyStmt());
+        return programStatement;
     }
 
     private ProgramStatement programStatement() {
