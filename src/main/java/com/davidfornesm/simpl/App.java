@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Hello world!
@@ -15,15 +16,18 @@ import java.util.List;
 public class App 
 {
     static boolean hadError = true;
+    static boolean debug = false;
 
     public static void main( String[] args ) throws IOException
     {
-        if (args.length > 1) {
-            System.out.println("Usage: simpl [source]");
+        if (args.length > 2) {
+            System.out.println("Usage: simpl debug || [source] (debug)");
             System.exit(64);
-        } else if (args.length == 1) {
+        } else if ((args.length == 1 && !Objects.equals(args[0], "debug")) || args.length == 2) {
+            if (args.length == 2 && Objects.equals(args[1], "debug")) debug = true;
             runFile(args[0]);
         } else {
+            if (args.length == 1 && args[0].equals("debug")) debug = true;
             runPrompt();
         }
     }
@@ -56,13 +60,15 @@ public class App
         if (state == null) state = new State();
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
         Parser parser = new Parser(tokens);
         ProgramStatement program = parser.parse();
 
-        System.out.println("program: " + program.toString());
+        if (debug) {
+            for (Token token : tokens) {
+                System.out.println(token);
+            }
+            System.out.println("program: " + program.toString());
+        }
         State finalState = program.eval(state);
         Integer result = finalState.lookup("result");
         System.out.println("result := " + result);
