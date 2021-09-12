@@ -4,10 +4,17 @@ abstract class ProgramStatement {
 
     public abstract State eval(State s); // <i,s> |v| s'
 
+    public abstract String compile(State s);
+
     static class EmptyStmt extends ProgramStatement {
 
         public State eval(State s) {
             return s;
+        }
+
+        @Override
+        public String compile(State s) {
+            return "";
         }
 
         @Override
@@ -25,6 +32,11 @@ abstract class ProgramStatement {
         public AssignmentStmt(String name, ArithmeticExp e) {
             x = name;
             a = e;
+        }
+
+        public String compile(State s) {
+            s.setNewBinding(x, 1);
+            return x + " = " + a.compile(s) + ";";
         }
 
         @Override
@@ -56,6 +68,11 @@ abstract class ProgramStatement {
         public State eval(State s) {
             return c2.eval(c1.eval(s));
         }
+
+        @Override
+        public String compile(State s) {
+            return c1.compile(s) + " " + c2.compile(s);
+        }
     }
 
     static class IfThenElseStmt extends ProgramStatement {
@@ -79,6 +96,11 @@ abstract class ProgramStatement {
             if (b.eval(s)) return c1.eval(s);
             else return c2.eval(s);
         }
+
+        @Override
+        public String compile(State s) {
+            return "if (" + b.compile(s) + ") {" + c1.compile(s) + "} else {" + c2.compile(s) + "}";
+        }
     }
 
     static class WhileStmt extends ProgramStatement {
@@ -99,6 +121,11 @@ abstract class ProgramStatement {
         public State eval(State s) {
             if (b.eval(s)) return this.eval(c.eval(s));
             else return s;
+        }
+
+        @Override
+        public String compile(State s) {
+            return "while (" + b.compile(s) + ") {" + c.compile(s) + "}";
         }
     }
 }
