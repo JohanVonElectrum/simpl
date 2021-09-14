@@ -22,7 +22,7 @@ public class App
     public static void main( String[] args ) throws IOException
     {
         if (args.length > 2) {
-            System.out.println("Usage: simpl debug || [source] compile || [source] (debug)");
+            System.out.println("Usage: simpl debug || [source] (compile) || [source] (debug)");
             System.exit(64);
         } else if ((args.length == 1 && !Objects.equals(args[0], "debug")) || args.length == 2) {
             if (args.length == 2 && Objects.equals(args[1], "debug")) debug = true;
