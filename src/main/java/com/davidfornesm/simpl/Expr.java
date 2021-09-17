@@ -250,7 +250,7 @@ abstract class BooleanExp {
 
         @Override
         public String toString() {
-            return "(not: " + b.toString() + ";";
+            return "(not: " + b.toString() + ")";
         }
 
         public boolean eval(State s) {
