@@ -24,12 +24,12 @@ public class App
         if (args.length > 2) {
             System.out.println("Usage: simpl debug || [source] (compile) || [source] (debug)");
             System.exit(64);
-        } else if ((args.length == 1 && !Objects.equals(args[0], "debug")) || args.length == 2) {
+        } else if ((args.length == 1 && !args[0].equals("debug")) || args.length == 2) {
             if (args.length == 2 && Objects.equals(args[1], "debug")) debug = true;
             if (args.length == 2 && Objects.equals(args[1], "compile")) compile = true;
             runFile(args[0]);
         } else {
-            if (args.length == 1 && args[0].equals("debug")) debug = true;
+            if (args.length == 1) debug = true;
             runPrompt();
         }
     }
