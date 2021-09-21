@@ -22,7 +22,11 @@ public class Parser {
 
     private ProgramStatement programStatement() {
         ProgramStatement programStatement = skipStatement();
-        if (match(SKIP)) programStatement = skipStatement();
+        if (match(LEFT_PAREN)) {
+            programStatement = programStatement();
+            consume(RIGHT_PAREN, "expected right paren");
+        }
+        else if (match(SKIP)) programStatement = skipStatement();
         else if (match(IDENTIFIER)) programStatement = assignmentStatement();
         else if (match(IF)) programStatement = ifStatement();
         else if (match(WHILE)) programStatement = whileStatement();
@@ -48,7 +52,6 @@ public class Parser {
         ProgramStatement ifTrue = programStatement();
         consume(ELSE, "expected else after then.");
         ProgramStatement ifFalse = programStatement();
-        consume(END, "expected end after else.");
         return new ProgramStatement.IfThenElseStmt(booleanExp, ifTrue, ifFalse);
 
     }
@@ -57,7 +60,6 @@ public class Parser {
         BooleanExp booleanExp = booleanExp();
         consume(DO, "expected do after while.");
         ProgramStatement programStatement = programStatement();
-        consume(END, "expected end after while");
         return new ProgramStatement.WhileStmt(booleanExp, programStatement);
     }
 

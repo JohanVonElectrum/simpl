@@ -7,7 +7,7 @@ public class Token {
         NUMBER, IDENTIFIER, PLUS, MINUS, STAR,
         TRUE, FALSE, EQUAL, LESS_EQUAL, MORE, NOT, OR,
         SKIP, WALRUS, SEMICOLON, IF, THEN, ELSE, WHILE, DO,
-        END,
+        END, LEFT_PAREN, RIGHT_PAREN,
         EOF
     }
 
