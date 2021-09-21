@@ -1,7 +1,7 @@
 n := 6;
 i := n;
 result := 0;
-while 0 <= i do
+while 0 <= i do (
     result := result + i;
     i := i - 1
-end
+)
