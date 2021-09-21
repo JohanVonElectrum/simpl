@@ -17,19 +17,17 @@ public class Parser {
     }
 
     private ProgramStatement program() {
-        ProgramStatement programStatement = programStatement();
-        if (!(programStatement instanceof ProgramStatement.SequenceStmt))
-            programStatement = new ProgramStatement.SequenceStmt(programStatement, new ProgramStatement.EmptyStmt());
-        return programStatement;
+        return new ProgramStatement.SequenceStmt(programStatement(), new ProgramStatement.EmptyStmt());
     }
 
     private ProgramStatement programStatement() {
         ProgramStatement programStatement = skipStatement();
         if (match(SKIP)) programStatement = skipStatement();
         else if (match(IDENTIFIER)) programStatement = assignmentStatement();
-        else if (match(IF)) programStatement =  ifStatement();
+        else if (match(IF)) programStatement = ifStatement();
         else if (match(WHILE)) programStatement = whileStatement();
-        if (match(SEMICOLON)) programStatement = new ProgramStatement.SequenceStmt(programStatement, programStatement());
+        if (match(SEMICOLON))
+            programStatement = new ProgramStatement.SequenceStmt(programStatement, programStatement());
         return programStatement;
     }
 
@@ -41,8 +39,7 @@ public class Parser {
         Token ident = previous();
         String name = ident.lexeme;
         consume(WALRUS, "expected walrus operator.");
-        ArithmeticExp expr = arithmeticExp();
-        return new ProgramStatement.AssignmentStmt(name, expr);
+        return new ProgramStatement.AssignmentStmt(name, arithmeticExp());
     }
 
     private ProgramStatement ifStatement() {
@@ -51,9 +48,8 @@ public class Parser {
         ProgramStatement ifTrue = programStatement();
         consume(ELSE, "expected else after then.");
         ProgramStatement ifFalse = programStatement();
-        ProgramStatement.IfThenElseStmt ifThenElseStmt = new ProgramStatement.IfThenElseStmt(booleanExp, ifTrue, ifFalse);
         consume(END, "expected end after else.");
-        return ifThenElseStmt;
+        return new ProgramStatement.IfThenElseStmt(booleanExp, ifTrue, ifFalse);
 
     }
 
@@ -61,9 +57,8 @@ public class Parser {
         BooleanExp booleanExp = booleanExp();
         consume(DO, "expected do after while.");
         ProgramStatement programStatement = programStatement();
-        ProgramStatement.WhileStmt whileStmt = new ProgramStatement.WhileStmt(booleanExp, programStatement);
         consume(END, "expected end after while");
-        return whileStmt;
+        return new ProgramStatement.WhileStmt(booleanExp, programStatement);
     }
 
     private BooleanExp booleanExp() {
@@ -93,9 +88,15 @@ public class Parser {
         if (arithmeticExp == null) throw new RuntimeException("expected arithmetic expression.");
         if (match(PLUS, MINUS, STAR)) {
             switch (previous().type) {
-                case PLUS: arithmeticExp = new ArithmeticExp.AdditionExp(arithmeticExp, arithmeticExp()); break;
-                case MINUS: arithmeticExp =  new ArithmeticExp.SubtractionExp(arithmeticExp, arithmeticExp()); break;
-                case STAR: arithmeticExp = new ArithmeticExp.ProductExp(arithmeticExp, arithmeticExp()); break;
+                case PLUS:
+                    arithmeticExp = new ArithmeticExp.AdditionExp(arithmeticExp, arithmeticExp());
+                    break;
+                case MINUS:
+                    arithmeticExp = new ArithmeticExp.SubtractionExp(arithmeticExp, arithmeticExp());
+                    break;
+                case STAR:
+                    arithmeticExp = new ArithmeticExp.ProductExp(arithmeticExp, arithmeticExp());
+                    break;
             }
         }
         return arithmeticExp;
@@ -125,7 +126,7 @@ public class Parser {
     }
 
     private void advance() {
-        if(!isAtEnd()) current++;
+        if (!isAtEnd()) current++;
     }
 
     private boolean isAtEnd() {
