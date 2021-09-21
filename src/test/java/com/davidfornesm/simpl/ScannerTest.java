@@ -12,7 +12,7 @@ public class ScannerTest extends TestCase {
     public void testScanTokens() {
         String source = "123 abc + - * true false " +
                 "= <= > ! || skip := ; if then else " +
-                "while do";
+                "while do ( )";
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
         List<Token> expected_tokens = new ArrayList<>();
@@ -36,6 +36,8 @@ public class ScannerTest extends TestCase {
         expected_tokens.add(new Token(ELSE, "else", null, 1));
         expected_tokens.add(new Token(WHILE, "while", null, 1));
         expected_tokens.add(new Token(DO, "do", null, 1));
+        expected_tokens.add(new Token(LEFT_PAREN, "(", null, 1));
+        expected_tokens.add(new Token(RIGHT_PAREN, ")", null, 1));
         expected_tokens.add(new Token(EOF, "", null, 1));
 
         assertEquals(expected_tokens, tokens);
