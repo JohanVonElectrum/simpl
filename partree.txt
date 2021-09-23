@@ -1,0 +1,92 @@
+#### program ####
+
+a := 2;
+
+while a <= 10 do (
+    a := a + a;
+    a := a - 1;
+);
+
+result := a
+
+#### tree ####
+
+program: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)), 
+			(seq: 
+				(while: 
+					(leq: (var: a), (num: 10)), 
+					(seq: 
+						(assign: a, (add: (var: a), (var: a))), 
+						(seq: 
+							(assign: a, (sub: (var: a), (num: 1))), 
+							(skip)))), 
+				(assign: result, (var: a)))), 
+		(skip))
+		
+#### end ####
+	
+#### program2 ####
+
+a := 2;
+
+while a <= 10 do (
+    a := a + a;
+    a := a - 1;
+);
+
+result := a;
+result := result + 1
+
+#### tree ####
+	
+program2: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)), 
+			(seq: 
+				(while: 
+					(leq: (var: a), (num: 10)), 
+					(seq: 
+						(assign: a, (add: (var: a), (var: a))), 
+						(seq: 
+							(assign: a, (sub: (var: a), (num: 1))), 
+							(skip)))), 
+				(seq: 
+					(assign: result, (var: a)), 
+					(assign: result, (add: (var: result), (num: 1)))))), 
+		(skip))
+		
+#### end ####
+
+#### program3 ####
+
+a := 2;
+
+while a <= 10 do
+    a := a + a;
+    a := a - 1;
+
+a := a + 1;
+result := a
+
+#### tree ####
+
+program: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)),
+			(while: 
+				(leq: (var: a), (num: 10)), 
+				(seq: 
+					(assign: a, (add: (var: a), (var: a))), 
+					(seq: 
+						(assign: a, (sub: (var: a), (num: 1))), 
+						(seq: 
+							(assign: a, (add: (var: a), (num: 1))), 
+							(assign: result, (var: a))))))), 
+		(skip))
+
+#### end ####
