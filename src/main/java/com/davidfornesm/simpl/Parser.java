@@ -58,9 +58,9 @@ public class Parser {
     }
 
     private ProgramStatement whileStatement() {
-        ProgramStatement programStatement;
         BooleanExp booleanExp = booleanExp();
         consume(DO, "expected do after while.");
+        ProgramStatement programStatement;
         if (match(LEFT_PAREN)) {
             programStatement = programStatement();
             consume(RIGHT_PAREN, "expected right paren.");
