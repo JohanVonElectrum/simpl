@@ -1,0 +1,127 @@
+#### program ####
+
+a := 2;
+
+while a <= 10 do (
+    a := a + a;
+    a := a - 1;
+);
+
+result := a
+
+#### tree ####
+
+program: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)), 
+			(seq: 
+				(while: 
+					(leq: (var: a), (num: 10)), 
+					(seq: 
+						(assign: a, (add: (var: a), (var: a))), 
+						(seq: 
+							(assign: a, (sub: (var: a), (num: 1))), 
+							(skip)))), 
+				(assign: result, (var: a)))), 
+		(skip))
+		
+#### end ####
+	
+#### program2 ####
+
+a := 2;
+
+while a <= 10 do (
+    a := a + a;
+    a := a - 1;
+);
+
+result := a;
+result := result + 1
+
+#### tree ####
+	
+program2: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)), 
+			(seq: 
+				(while: 
+					(leq: (var: a), (num: 10)), 
+					(seq: 
+						(assign: a, (add: (var: a), (var: a))), 
+						(seq: 
+							(assign: a, (sub: (var: a), (num: 1))), 
+							(skip)))), 
+				(seq: 
+					(assign: result, (var: a)), 
+					(assign: result, (add: (var: result), (num: 1)))))), 
+		(skip))
+		
+#### end ####
+
+#### program3 ####
+
+a := 2;
+
+while a <= 10 do
+    a := a + a;
+    a := a - 1;
+
+a := a + 1;
+result := a
+
+#### tree ####
+
+program: 
+	(seq: 
+		(seq: 
+			(assign: a, (num: 2)),
+			(while: 
+				(leq: (var: a), (num: 10)), 
+				(seq: 
+					(assign: a, (add: (var: a), (var: a))), 
+					(seq: 
+						(assign: a, (sub: (var: a), (num: 1))), 
+						(seq: 
+							(assign: a, (add: (var: a), (num: 1))), 
+							(assign: result, (var: a))))))), 
+		(skip))
+
+#### end ####
+
+#### program4 ####
+
+i := 0;
+j := 0;
+
+while i <= 5 do (
+    while j <= 5 do (
+        j := j + 1
+    );
+    i := i + 1
+);
+
+result := j
+
+#### tree ####
+
+program: 
+	(seq: 
+		(seq: 
+			(assign: i, (num: 0)), 
+			(seq: 
+				(assign: j, (num: 0)), 
+				(seq: 
+					(while: 
+						(leq: (var: i), (num: 5)), 
+						(seq: 
+							(while: 
+								(leq: (var: j), (num: 5)), 
+								(assign: j, (add: (var: j), (num: 1)))), 
+							(assign: i, (add: (var: i), (num: 1))))), 
+					(assign: result, (var: j))))), 
+		(skip))
+
+#### end ####

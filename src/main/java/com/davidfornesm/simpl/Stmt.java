@@ -2,7 +2,7 @@ package com.davidfornesm.simpl;
 
 abstract class ProgramStatement {
 
-    public abstract State eval(State s); // <i,s> |v| s'
+    public abstract State eval(State s);
 
     public abstract String compile(State s);
 
@@ -26,7 +26,7 @@ abstract class ProgramStatement {
 
     static class AssignmentStmt extends ProgramStatement {
 
-        private final String x; // a variable is a numeric index
+        private final String x;
         private final ArithmeticExp a;
 
         public AssignmentStmt(String name, ArithmeticExp e) {

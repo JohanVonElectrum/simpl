@@ -47,8 +47,12 @@ public class Parser {
         consume(THEN, "expected then after if.");
         ProgramStatement ifTrue = programStatement();
         consume(ELSE, "expected else after then.");
-        ProgramStatement ifFalse = programStatement();
-        consume(END, "expected end after else.");
+        ProgramStatement ifFalse;
+        if (match(LEFT_PAREN)) {
+            ifFalse = programStatement();
+            consume(RIGHT_PAREN, "expected right paren.");
+        }
+        else ifFalse = programStatement();
         return new ProgramStatement.IfThenElseStmt(booleanExp, ifTrue, ifFalse);
 
     }
@@ -56,8 +60,12 @@ public class Parser {
     private ProgramStatement whileStatement() {
         BooleanExp booleanExp = booleanExp();
         consume(DO, "expected do after while.");
-        ProgramStatement programStatement = programStatement();
-        consume(END, "expected end after while");
+        ProgramStatement programStatement;
+        if (match(LEFT_PAREN)) {
+            programStatement = programStatement();
+            consume(RIGHT_PAREN, "expected right paren.");
+        }
+        else programStatement = programStatement();
         return new ProgramStatement.WhileStmt(booleanExp, programStatement);
     }
 

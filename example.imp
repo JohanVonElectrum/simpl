@@ -2,29 +2,24 @@ n := 6;
 
 if n = 6
 then skip
-else skip
-end;
+else (skip);
 
 if n = 4 || 4 + 3 = 8 || !false
 then result := 100
-else skip
-end;
+else (skip);
 
 while result <= 200
-do
+do (
     result := result + 20;
     if 150 <= result
     then result := 1500
-    else
-    end;
-end;
+    else ()
+);
 
 if false || 3 = 1 + 2
 then result := 123
-else
-end;
+else ();
 
 if 3 * 20 > 1
 then result := result + 1
-else
-end
+else ()

@@ -124,13 +124,9 @@ abstract class ArithmeticExp {
     }
 }
 
-//
-// Boolean Expressions
-//
-
 abstract class BooleanExp {
 
-    public abstract boolean eval(State s); // <b,s> => v
+    public abstract boolean eval(State s);
 
     public abstract String compile(State s);
 

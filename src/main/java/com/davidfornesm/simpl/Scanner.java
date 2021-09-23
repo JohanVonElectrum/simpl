@@ -45,6 +45,8 @@ public class Scanner {
     private void scanToken() {
         char c = advance();
         switch (c) {
+            case '(': addToken(LEFT_PAREN); break;
+            case ')': addToken(RIGHT_PAREN); break;
             case '-': addToken(MINUS); break;
             case '+': addToken(PLUS); break;
             case ';': addToken(SEMICOLON); break;
