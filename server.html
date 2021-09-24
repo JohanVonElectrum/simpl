@@ -1,0 +1,26 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/static/bootstrap.min.css" rel="stylesheet">
+    <title>simpl</title>
+</head>
+<body>
+      <div class="container">
+          <div class="row mt-4">
+              <h1 class="text-center">simpl - S/IMP interpreter</h1>
+          </div>
+          <div class="row">
+              <form action="/" method="post" enctype="text/plain">
+                  <div class="form-group">
+                      <label for="sourceCode">Input source code</label>
+                      <textarea class="form-control" name="sourceCode" id="sourceCode" rows="15">@submission</textarea>
+                  </div>
+                  <input type="text" class="form-control mt-2" placeholder="@evaluation" readonly>
+                  <button type="submit" class="btn btn-primary mt-2">Submit!</button>
+              </form>
+          </div>
+      </div>
+</body>
+</html>
