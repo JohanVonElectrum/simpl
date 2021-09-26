@@ -1,0 +1,567 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <title>simpl</title>
+</head>
+<body>
+      <div class="container">
+          <div class="row mt-4">
+              <h1 class="text-center">simpl - S/IMP interpreter</h1>
+          </div>
+          <div class="row">
+              <form action="/" method="post" enctype="text/plain">
+                  <div class="form-group">
+                      <label for="sourceCode">Input source code</label>
+                      <textarea class="form-control" name="sourceCode" id="sourceCode" rows="15"></textarea>
+                  </div>
+                  <input id="evaluation" type="text" class="form-control mt-2" placeholder="@evaluation" readonly>
+                  <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
+              </form>
+          </div>
+      </div>
+</body>
+</html>
+
+<script>
+    let submission = document.getElementById("sourceCode");
+    let evaluation = document.getElementById("evaluation");
+    let submit = document.getElementById("process");
+    let a;
+
+    submit.onclick = function () {
+        let source = submission.value;
+        let scanner = new Scanner(source);
+        let tokens = scanner.scanTokens();
+        let parser = new Parser(tokens);
+        let root = parser.parse();
+        let value = root.eval(new State());
+        evaluation.setAttribute("placeholder", value.lookup("result"));
+    }
+
+    evaluation.setAttribute("placeholder", "Results will appear here...");
+
+
+
+    class Token {
+        static TokenType = Object.freeze({
+            NUMBER: 1,
+            IDENTIFIER: 2,
+            PLUS: 3,
+            MINUS: 4,
+            STAR: 5,
+            TRUE: 6,
+            FALSE: 7,
+            EQUAL: 8,
+            LESS_EQUAL: 9,
+            MORE: 10,
+            NOT: 11,
+            OR: 12,
+            SKIP: 13,
+            WALRUS: 14,
+            SEMICOLON: 15,
+            IF: 16,
+            THEN: 17,
+            ELSE: 18,
+            WHILE: 19,
+            DO: 20,
+            END: 21,
+            LEFT_PAREN: 22,
+            RIGHT_PAREN: 23,
+            EOF: 24
+        });
+
+        constructor(type, lexeme, literal, line) {
+            this.type = type;
+            this.lexeme = lexeme;
+            this.literal = literal;
+            this.line = line;
+        }
+
+        equals(other) {
+            return this.type === other.type &&
+                this.lexeme === other.lexeme &&
+                this.literal === other.literal &&
+                this.line === other.line;
+        }
+
+        toString() {
+            return `Token{${this.type}, ${this.lexeme}, ${this.literal}, ${this.line}}`
+        }
+    }
+
+    class Scanner {
+        constructor(source) {
+            this.source = source;
+            this.tokens = [];
+            this.start = 0;
+            this.current = 0;
+            this.line = 1;
+            this.keywords = {};
+            this.keywords["true"] = Token.TokenType.TRUE;
+            this.keywords["false"] = Token.TokenType.FALSE;
+            this.keywords["skip"] = Token.TokenType.SKIP;
+            this.keywords["if"] = Token.TokenType.IF;
+            this.keywords["then"] = Token.TokenType.THEN;
+            this.keywords["else"] = Token.TokenType.ELSE;
+            this.keywords["while"] = Token.TokenType.WHILE;
+            this.keywords["do"] = Token.TokenType.DO;
+            this.keywords["end"] = Token.TokenType.END;
+        }
+
+        scanTokens() {
+            while (!this.isAtEnd()) {
+                this.start = this.current;
+                this.scanToken();
+            }
+            this.tokens.push(new Token(Token.TokenType.EOF, "", null, this.line));
+            return this.tokens;
+        }
+
+        scanToken() {
+            const c = this.advance();
+            switch (c) {
+                case '(': this.addToken(Token.TokenType.LEFT_PAREN); break;
+                case ')': this.addToken(Token.TokenType.RIGHT_PAREN); break;
+                case '-': this.addToken(Token.TokenType.MINUS); break;
+                case '+': this.addToken(Token.TokenType.PLUS); break;
+                case ';': this.addToken(Token.TokenType.SEMICOLON); break;
+                case '*': this.addToken(Token.TokenType.STAR); break;
+                case '!': this.addToken(Token.TokenType.NOT); break;
+                case '|':
+                    if (this.match('|')) {
+                        this.addToken(Token.TokenType.OR);
+                    }
+                    break;
+                case '=': this.addToken(Token.TokenType.EQUAL); break;
+                case ':':
+                    if (this.match('=')) {
+                        this.addToken(Token.TokenType.WALRUS);
+                    }
+                    break;
+                case '<':
+                    if (this.match('=')) {
+                        this.addToken(Token.TokenType.LESS_EQUAL);
+                    }
+                    break;
+                case '>': this.addToken(Token.TokenType.MORE); break;
+                case ' ':
+                case '\r':
+                case '\t':
+                    break;
+                case '\n': this.line++; break;
+                default:
+                    if (this.isDigit(c)) {
+                        this.number();
+                    } else if (this.isAlpha(c)) {
+                        this.identifier();
+                    } else {
+                        console.log("Unexpected: " + c);
+                    }
+                    break;
+            }
+        }
+
+        addToken(type, literal) {
+            const text = this.source.substring(this.start, this.current);
+            this.tokens.push(new Token(type, text, literal, this.line));
+        }
+
+        advance() {
+            return this.source.charAt(this.current++);
+        }
+
+        match(expected) {
+            if (this.isAtEnd()) return false;
+            if (this.source.charAt(this.current) !== expected) return false;
+            this.current++;
+            return true;
+        }
+
+        isAtEnd() {
+            return this.current >= this.source.length;
+        }
+
+        isDigit(c) {
+            return c >= '0' && c <= '9'
+        }
+
+        number() {
+            while (this.isDigit(this.peek())) this.advance();
+            if (this.peek() === '.' && this.isDigit(this.peekNext())) {
+                this.advance();
+                while (this.isDigit(this.peek())) this.advance();
+            }
+            this.addToken(Token.TokenType.NUMBER, this.source.substring(this.start,
+                this.current))
+        }
+
+        peek() {
+            if (this.isAtEnd()) return '\0';
+            return this.source.charAt(this.current);
+        }
+
+        peekNext() {
+            if (this.current + 1 >= this.source.length) return '\0';
+            return this.source.charAt(this.current + 1);
+        }
+
+        isAlpha(c) {
+            return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                (c === '_');
+        }
+
+        identifier() {
+            while (this.isAlphaNumeric(this.peek())) this.advance();
+            const text = this.source.substring(this.start, this.current);
+            let type = this.keywords[text];
+            if (type == null) type = Token.TokenType.IDENTIFIER;
+            this.addToken(type);
+        }
+
+        isAlphaNumeric(c) {
+            return this.isAlpha(c) || this.isDigit(c);
+        }
+    }
+
+    class Parser {
+        constructor(tokens) {
+            this.tokens = tokens;
+            this.current = 0;
+        }
+
+        parse() {
+            return this.program();
+        }
+
+        program() {
+            return new SequenceStmt(this.programStatement(), new EmptyStmt());
+        }
+
+        programStatement() {
+            let programStatement = new EmptyStmt();
+            if (this.match(Token.TokenType.SKIP)) programStatement = new EmptyStmt();
+            else if (this.match(Token.TokenType.IDENTIFIER)) programStatement = this.assignmentStatement();
+            else if (this.match(Token.TokenType.IF)) programStatement = this.ifStatement();
+            else if (this.match(Token.TokenType.WHILE)) programStatement = this.whileStatement();
+            if (this.match(Token.TokenType.SEMICOLON)) programStatement = new SequenceStmt(programStatement, this.programStatement());
+            return programStatement;
+            
+        }
+
+        match(...types) {
+            for (const type of types) {
+                if (this.check(type)) {
+                    this.advance();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        check(type) {
+            if (this.isAtEnd()) return false;
+            return this.peek().type === type;
+        }
+
+        advance() {
+            if (!this.isAtEnd()) this.current++;
+        }
+
+        isAtEnd() {
+            return this.peek().type === Token.TokenType.EOF;
+        }
+
+        peek() {
+            return this.tokens[this.current];
+        }
+
+        assignmentStatement() {
+            let ident = this.previous();
+            let name = ident.lexeme;
+            this.consume(Token.TokenType.WALRUS, "expected walrus operator.");
+            return new AssignmentStmt(name, this.arithmeticExp());
+        }
+
+        previous() {
+            return this.tokens[this.current - 1];
+        }
+
+        consume(type, message) {
+            if (this.check(type)) {
+                this.advance();
+                return;
+            }
+            throw message;
+        }
+
+        arithmeticExp() {
+            let arithmeticExp = null;
+            if (this.match(Token.TokenType.NUMBER)) arithmeticExp = new NumericExp(parseInt(this.previous().literal));
+            else if (this.match(Token.TokenType.IDENTIFIER)) arithmeticExp = new VariableExp(this.previous().lexeme);
+            if (arithmeticExp == null) throw "expected arithmetic expression";
+            if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.STAR)) {
+                switch (this.previous().type) {
+                    case Token.TokenType.PLUS:
+                        arithmeticExp = new AdditionExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                    case Token.TokenType.MINUS:
+                        arithmeticExp = new SubtractionExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                    case Token.TokenType.STAR:
+                        arithmeticExp = new ProductExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                }
+            }
+            return arithmeticExp;
+        }
+
+        ifStatement() {
+            let booleanExp = this.booleanExp();
+            this.consume(Token.TokenType.THEN, "expected then after if.");
+            let ifTrue = this.programStatement();
+            this.consume(Token.TokenType.ELSE, "expected else after then.");
+            let ifFalse;
+            if (this.match(Token.TokenType.LEFT_PAREN)) {
+                ifFalse = this.programStatement();
+                this.consume(Token.TokenType.RIGHT_PAREN);
+            }
+            else ifFalse = this.programStatement();
+            return new IfThenElseStmt(booleanExp, ifTrue, ifFalse);
+        }
+
+        whileStatement() {
+            let booleanExp = this.booleanExp();
+            this.consume(Token.TokenType.DO, "expected do after while.");
+            let programStatement;
+            if (this.match(Token.TokenType.LEFT_PAREN)) {
+                programStatement = this.programStatement();
+                this.consume(Token.TokenType.RIGHT_PAREN, "expected right paren after left paren.");
+            }
+            else programStatement = this.programStatement();
+            return new WhileStmt(booleanExp, programStatement);
+        }
+
+        booleanExp() {
+            let booleanExp = null;
+            if (this.match(Token.TokenType.TRUE)) booleanExp = new TrueExp();
+            else if (this.match(Token.TokenType.FALSE)) booleanExp = new FalseExp();
+            else if (this.match(Token.TokenType.NOT)) booleanExp = new NotExp(this.booleanExp());
+            else {
+                let arithmeticExp = this.arithmeticExp();
+                if (this.match(Token.TokenType.EQUAL)) {
+                    booleanExp = new EqualExp(arithmeticExp, this.arithmeticExp());
+                } else if (this.match(Token.TokenType.LESS_EQUAL)) {
+                    booleanExp = new LeqExp(arithmeticExp, this.arithmeticExp());
+                } else if (this.match(Token.TokenType.MORE)) {
+                    booleanExp = new BiggerThanExp(arithmeticExp, this.arithmeticExp());
+                }
+            }
+            if (booleanExp == null) throw "expected boolean expression";
+            if (this.match(Token.TokenType.OR)) booleanExp = new OrExp(booleanExp, this.booleanExp());
+            return booleanExp;
+        }
+    }
+
+    class WhileStmt {
+        constructor(e, s) {
+            this.b = e;
+            this.c = s;
+        }
+
+        eval(s) {
+            if (this.b.eval(s)) return this.eval(this.c.eval(s));
+            else return s;
+        }
+    }
+
+    class IfThenElseStmt {
+        constructor(e, s1, s2) {
+            this.b = e;
+            this.c1 = s1;
+            this.c2 = s2;
+        }
+
+        eval(s) {
+            if (this.b.eval(s)) return this.c1.eval(s);
+            else return this.c2.eval(s);
+        }
+    }
+
+    class OrExp {
+        constructor(e1, e2) {
+            this.b1 = e1;
+            this.b2 = e2;
+        }
+
+        eval(s) {
+            let b = this.b1.eval(s);
+            if (b) return b;
+            else return this.b2.eval(s);
+        }
+    }
+
+    class BiggerThanExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) > this.a2.eval(s);
+        }
+    }
+
+    class LeqExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) <= this.a2.eval(s);
+        }
+    }
+
+    class TrueExp {
+        eval(s) {
+            return true;
+        }
+    }
+
+    class FalseExp {
+        eval(s) {
+            return false;
+        }
+    }
+
+    class NotExp {
+        constructor(e) {
+            this.b = e;
+        }
+
+        eval(s) {
+            return !(this.b.eval(s));
+        }
+    }
+
+    class EqualExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) === this.a2.eval(s);
+        }
+    }
+
+    class SequenceStmt {
+        constructor(s1, s2) {
+            this.c1 = s1;
+            this.c2 = s2;
+        }
+
+        eval(s) {
+            return this.c2.eval(this.c1.eval(s));
+        }
+    }
+
+    class EmptyStmt {
+        eval(s) {
+            return s;
+        }
+    }
+
+    class AssignmentStmt {
+        constructor(name, e) {
+            this.x = name;
+            this.a = e;
+        }
+
+        eval(s) {
+            s.setNewBinding(this.x, this.a.eval(s));
+            return s;
+        }
+    }
+
+    class VariableExp {
+        constructor(name) {
+            this.name = name;
+        }
+
+        eval(s) {
+            return s.lookup(this.name);
+        }
+    }
+
+    class NumericExp {
+        constructor(m) {
+            this.n = m;
+        }
+
+        eval(s) {
+            return this.n;
+        }
+    }
+
+    class AdditionExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) + this.a2.eval(s);
+        }
+    }
+
+    class SubtractionExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) - this.a2.eval(s);
+        }
+    }
+
+    class ProductExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) * this.a2.eval(s);
+        }
+    }
+
+    class State {
+        constructor() {
+            this.state = {};
+        }
+
+        lookup(name) {
+            return this.state[name];
+        }
+
+        contains(name) {
+            return this.state.contains(name);
+        }
+
+        keys() {
+            return this.state.keys();
+        }
+
+        setNewBinding(name, n) {
+            this.state[name] = n;
+        }
+    }
+
+
+</script>
