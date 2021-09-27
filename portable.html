@@ -1,3 +1,27 @@
+<!-- 
+MIT License
+
+Copyright (c) 2021 David Fornés Martínez
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +41,7 @@
                       <label for="sourceCode">Input source code</label>
                       <textarea class="form-control" name="sourceCode" id="sourceCode" rows="15"></textarea>
                   </div>
-                  <input id="evaluation" type="text" class="form-control mt-2" placeholder="@evaluation" readonly>
+                  <input id="evaluation" type="text" class="form-control mt-2" placeholder="Results will appear here..." readonly>
                   <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
               </form>
           </div>
@@ -29,7 +53,6 @@
     let submission = document.getElementById("sourceCode");
     let evaluation = document.getElementById("evaluation");
     let submit = document.getElementById("process");
-    let a;
 
     submit.onclick = function () {
         let source = submission.value;
@@ -38,12 +61,8 @@
         let parser = new Parser(tokens);
         let root = parser.parse();
         let value = root.eval(new State());
-        evaluation.setAttribute("placeholder", value.lookup("result"));
+        evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
     }
-
-    evaluation.setAttribute("placeholder", "Results will appear here...");
-
-
 
     class Token {
         static TokenType = Object.freeze({
@@ -169,23 +188,12 @@
             this.tokens.push(new Token(type, text, literal, this.line));
         }
 
-        advance() {
-            return this.source.charAt(this.current++);
-        }
-
-        match(expected) {
-            if (this.isAtEnd()) return false;
-            if (this.source.charAt(this.current) !== expected) return false;
-            this.current++;
-            return true;
-        }
-
-        isAtEnd() {
-            return this.current >= this.source.length;
-        }
-
-        isDigit(c) {
-            return c >= '0' && c <= '9'
+        identifier() {
+            while (this.isAlphaNumeric(this.peek())) this.advance();
+            const text = this.source.substring(this.start, this.current);
+            let type = this.keywords[text];
+            if (type == null) type = Token.TokenType.IDENTIFIER;
+            this.addToken(type);
         }
 
         number() {
@@ -198,6 +206,17 @@
                 this.current))
         }
 
+        advance() {
+            return this.source.charAt(this.current++);
+        }
+
+        match(expected) {
+            if (this.isAtEnd()) return false;
+            if (this.source.charAt(this.current) !== expected) return false;
+            this.current++;
+            return true;
+        }
+
         peek() {
             if (this.isAtEnd()) return '\0';
             return this.source.charAt(this.current);
@@ -208,18 +227,18 @@
             return this.source.charAt(this.current + 1);
         }
 
+        isAtEnd() {
+            return this.current >= this.source.length;
+        }
+
         isAlpha(c) {
             return (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 (c === '_');
         }
 
-        identifier() {
-            while (this.isAlphaNumeric(this.peek())) this.advance();
-            const text = this.source.substring(this.start, this.current);
-            let type = this.keywords[text];
-            if (type == null) type = Token.TokenType.IDENTIFIER;
-            this.addToken(type);
+        isDigit(c) {
+            return c >= '0' && c <= '9'
         }
 
         isAlphaNumeric(c) {
@@ -249,34 +268,6 @@
             else if (this.match(Token.TokenType.WHILE)) programStatement = this.whileStatement();
             if (this.match(Token.TokenType.SEMICOLON)) programStatement = new SequenceStmt(programStatement, this.programStatement());
             return programStatement;
-            
-        }
-
-        match(...types) {
-            for (const type of types) {
-                if (this.check(type)) {
-                    this.advance();
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        check(type) {
-            if (this.isAtEnd()) return false;
-            return this.peek().type === type;
-        }
-
-        advance() {
-            if (!this.isAtEnd()) this.current++;
-        }
-
-        isAtEnd() {
-            return this.peek().type === Token.TokenType.EOF;
-        }
-
-        peek() {
-            return this.tokens[this.current];
         }
 
         assignmentStatement() {
@@ -284,39 +275,6 @@
             let name = ident.lexeme;
             this.consume(Token.TokenType.WALRUS, "expected walrus operator.");
             return new AssignmentStmt(name, this.arithmeticExp());
-        }
-
-        previous() {
-            return this.tokens[this.current - 1];
-        }
-
-        consume(type, message) {
-            if (this.check(type)) {
-                this.advance();
-                return;
-            }
-            throw message;
-        }
-
-        arithmeticExp() {
-            let arithmeticExp = null;
-            if (this.match(Token.TokenType.NUMBER)) arithmeticExp = new NumericExp(parseInt(this.previous().literal));
-            else if (this.match(Token.TokenType.IDENTIFIER)) arithmeticExp = new VariableExp(this.previous().lexeme);
-            if (arithmeticExp == null) throw "expected arithmetic expression";
-            if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.STAR)) {
-                switch (this.previous().type) {
-                    case Token.TokenType.PLUS:
-                        arithmeticExp = new AdditionExp(arithmeticExp, this.arithmeticExp());
-                        break;
-                    case Token.TokenType.MINUS:
-                        arithmeticExp = new SubtractionExp(arithmeticExp, this.arithmeticExp());
-                        break;
-                    case Token.TokenType.STAR:
-                        arithmeticExp = new ProductExp(arithmeticExp, this.arithmeticExp());
-                        break;
-                }
-            }
-            return arithmeticExp;
         }
 
         ifStatement() {
@@ -345,6 +303,27 @@
             return new WhileStmt(booleanExp, programStatement);
         }
 
+        arithmeticExp() {
+            let arithmeticExp = null;
+            if (this.match(Token.TokenType.NUMBER)) arithmeticExp = new NumericExp(parseInt(this.previous().literal));
+            else if (this.match(Token.TokenType.IDENTIFIER)) arithmeticExp = new VariableExp(this.previous().lexeme);
+            if (arithmeticExp == null) throw "expected arithmetic expression";
+            if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.STAR)) {
+                switch (this.previous().type) {
+                    case Token.TokenType.PLUS:
+                        arithmeticExp = new AdditionExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                    case Token.TokenType.MINUS:
+                        arithmeticExp = new SubtractionExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                    case Token.TokenType.STAR:
+                        arithmeticExp = new ProductExp(arithmeticExp, this.arithmeticExp());
+                        break;
+                }
+            }
+            return arithmeticExp;
+        }
+
         booleanExp() {
             let booleanExp = null;
             if (this.match(Token.TokenType.TRUE)) booleanExp = new TrueExp();
@@ -364,110 +343,45 @@
             if (this.match(Token.TokenType.OR)) booleanExp = new OrExp(booleanExp, this.booleanExp());
             return booleanExp;
         }
-    }
 
-    class WhileStmt {
-        constructor(e, s) {
-            this.b = e;
-            this.c = s;
+        advance() {
+            if (!this.isAtEnd()) this.current++;
         }
 
-        eval(s) {
-            if (this.b.eval(s)) return this.eval(this.c.eval(s));
-            else return s;
-        }
-    }
-
-    class IfThenElseStmt {
-        constructor(e, s1, s2) {
-            this.b = e;
-            this.c1 = s1;
-            this.c2 = s2;
-        }
-
-        eval(s) {
-            if (this.b.eval(s)) return this.c1.eval(s);
-            else return this.c2.eval(s);
-        }
-    }
-
-    class OrExp {
-        constructor(e1, e2) {
-            this.b1 = e1;
-            this.b2 = e2;
-        }
-
-        eval(s) {
-            let b = this.b1.eval(s);
-            if (b) return b;
-            else return this.b2.eval(s);
-        }
-    }
-
-    class BiggerThanExp {
-        constructor(e1, e2) {
-            this.a1 = e1;
-            this.a2 = e2;
-        }
-
-        eval(s) {
-            return this.a1.eval(s) > this.a2.eval(s);
-        }
-    }
-
-    class LeqExp {
-        constructor(e1, e2) {
-            this.a1 = e1;
-            this.a2 = e2;
-        }
-
-        eval(s) {
-            return this.a1.eval(s) <= this.a2.eval(s);
-        }
-    }
-
-    class TrueExp {
-        eval(s) {
-            return true;
-        }
-    }
-
-    class FalseExp {
-        eval(s) {
+        match(...types) {
+            for (const type of types) {
+                if (this.check(type)) {
+                    this.advance();
+                    return true;
+                }
+            }
             return false;
         }
-    }
 
-    class NotExp {
-        constructor(e) {
-            this.b = e;
+        peek() {
+            return this.tokens[this.current];
         }
 
-        eval(s) {
-            return !(this.b.eval(s));
-        }
-    }
-
-    class EqualExp {
-        constructor(e1, e2) {
-            this.a1 = e1;
-            this.a2 = e2;
+        isAtEnd() {
+            return this.peek().type === Token.TokenType.EOF;
         }
 
-        eval(s) {
-            return this.a1.eval(s) === this.a2.eval(s);
-        }
-    }
-
-    class SequenceStmt {
-        constructor(s1, s2) {
-            this.c1 = s1;
-            this.c2 = s2;
+        previous() {
+            return this.tokens[this.current - 1];
         }
 
-        eval(s) {
-            return this.c2.eval(this.c1.eval(s));
+        check(type) {
+            if (this.isAtEnd()) return false;
+            return this.peek().type === type;
         }
+
+        consume(type, message) {
+            if (this.check(type)) {
+                this.advance();
+                return;
+            }
+            throw message;
+        }        
     }
 
     class EmptyStmt {
@@ -485,6 +399,42 @@
         eval(s) {
             s.setNewBinding(this.x, this.a.eval(s));
             return s;
+        }
+    }
+
+    class IfThenElseStmt {
+        constructor(e, s1, s2) {
+            this.b = e;
+            this.c1 = s1;
+            this.c2 = s2;
+        }
+
+        eval(s) {
+            if (this.b.eval(s)) return this.c1.eval(s);
+            else return this.c2.eval(s);
+        }
+    }
+
+    class WhileStmt {
+        constructor(e, s) {
+            this.b = e;
+            this.c = s;
+        }
+
+        eval(s) {
+            if (this.b.eval(s)) return this.eval(this.c.eval(s));
+            else return s;
+        }
+    }
+
+    class SequenceStmt {
+        constructor(s1, s2) {
+            this.c1 = s1;
+            this.c2 = s2;
+        }
+
+        eval(s) {
+            return this.c2.eval(this.c1.eval(s));
         }
     }
 
@@ -541,6 +491,74 @@
         }
     }
 
+    class TrueExp {
+        eval(s) {
+            return true;
+        }
+    }
+
+    class FalseExp {
+        eval(s) {
+            return false;
+        }
+    }
+
+    class NotExp {
+        constructor(e) {
+            this.b = e;
+        }
+
+        eval(s) {
+            return !(this.b.eval(s));
+        }
+    }
+
+    class EqualExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) === this.a2.eval(s);
+        }
+    }
+
+    class OrExp {
+        constructor(e1, e2) {
+            this.b1 = e1;
+            this.b2 = e2;
+        }
+
+        eval(s) {
+            let b = this.b1.eval(s);
+            if (b) return b;
+            else return this.b2.eval(s);
+        }
+    }
+
+    class BiggerThanExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) > this.a2.eval(s);
+        }
+    }
+
+    class LeqExp {
+        constructor(e1, e2) {
+            this.a1 = e1;
+            this.a2 = e2;
+        }
+
+        eval(s) {
+            return this.a1.eval(s) <= this.a2.eval(s);
+        }
+    }
+
     class State {
         constructor() {
             this.state = {};
@@ -562,6 +580,4 @@
             this.state[name] = n;
         }
     }
-
-
 </script>
