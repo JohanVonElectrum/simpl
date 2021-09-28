@@ -39,10 +39,16 @@ SOFTWARE.
               <form action="/" method="post" enctype="text/plain">
                   <div class="form-group">
                       <label for="sourceCode">Input source code</label>
-                      <textarea class="form-control" name="sourceCode" id="sourceCode" rows="15"></textarea>
+                      <textarea class="form-control" name="sourceCode" id="sourceCode" rows="20"></textarea>
                   </div>
                   <input id="evaluation" type="text" class="form-control mt-2" placeholder="Results will appear here..." readonly>
                   <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
+                  <div class="form-group mt-2">
+                    <label for="debug-tokens">Token debug information</label>
+                    <textarea class="form-control" name="debug-tokens" id="debug-tokens" rows="20" readonly></textarea>
+                    <label for="debug-tree">Tree debug information</label>
+                    <textarea class="form-control" name="debug-tree" id="debug-tree" rows="20" readonly></textarea>
+                  </div>
               </form>
           </div>
       </div>
@@ -53,6 +59,8 @@ SOFTWARE.
     let submission = document.getElementById("sourceCode");
     let evaluation = document.getElementById("evaluation");
     let submit = document.getElementById("process");
+    let debug_area_tokens = document.getElementById("debug-tokens");
+    let debug_area_tree = document.getElementById("debug-tree");
 
     submit.onclick = function () {
         let source = submission.value;
@@ -60,7 +68,16 @@ SOFTWARE.
         let tokens = scanner.scanTokens();
         let parser = new Parser(tokens);
         let root = parser.parse();
-        let value = root.eval(new State());
+        let state = new State();
+        let value = root.eval(state);
+        let debug_tokens = "";
+        let debug_tree = "";
+        for (const token of tokens) {
+            debug_tokens += token.toString() + "\n";
+        }
+        debug_tree = root.toString(1);
+        debug_area_tokens.value = debug_tokens;
+        debug_area_tree.value = debug_tree;
         evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
     }
 
@@ -107,7 +124,7 @@ SOFTWARE.
         }
 
         toString() {
-            return `Token{${this.type}, ${this.lexeme}, ${this.literal}, ${this.line}}`
+            return `Token{type=${this.type}, lexeme=${this.lexeme}, literal=${this.literal}, line=${this.line}}`
         }
     }
 
@@ -388,6 +405,10 @@ SOFTWARE.
         eval(s) {
             return s;
         }
+
+        toString(d) {
+            return `(empty)`;
+        }
     }
 
     class AssignmentStmt {
@@ -399,6 +420,10 @@ SOFTWARE.
         eval(s) {
             s.setNewBinding(this.x, this.a.eval(s));
             return s;
+        }
+
+        toString(d) {
+            return `(assign:\n${'\t'.repeat(d)}(name: ${this.x.toString(d+1)}),\n${'\t'.repeat(d)}${this.a.toString(d+1)})`;
         }
     }
 
@@ -413,6 +438,10 @@ SOFTWARE.
             if (this.b.eval(s)) return this.c1.eval(s);
             else return this.c2.eval(s);
         }
+
+        toString(d) {
+            return `(if:\n${'\t'.repeat(d)}${this.b.toString(d+1)},\n${'\t'.repeat(d)}${this.c1.toString(d+1)},\n${'\t'.repeat(d)}${this.c2.toString(d+1)})`;
+        }
     }
 
     class WhileStmt {
@@ -425,6 +454,10 @@ SOFTWARE.
             if (this.b.eval(s)) return this.eval(this.c.eval(s));
             else return s;
         }
+
+        toString(d) {
+            return `(while:\n${'\t'.repeat(d)}${this.b.toString(d+1)},\n${'\t'.repeat(d)}${this.c.toString(d+1)})`;
+        }
     }
 
     class SequenceStmt {
@@ -436,6 +469,10 @@ SOFTWARE.
         eval(s) {
             return this.c2.eval(this.c1.eval(s));
         }
+
+        toString(d) {
+            return `(seq:\n${'\t'.repeat(d)}${this.c1.toString(d+1)},\n${'\t'.repeat(d)}${this.c2.toString(d+1)})`;
+        }
     }
 
     class VariableExp {
@@ -446,6 +483,10 @@ SOFTWARE.
         eval(s) {
             return s.lookup(this.name);
         }
+
+        toString(d) {
+            return `(var: ${this.name.toString()})`;
+        }
     }
 
     class NumericExp {
@@ -455,6 +496,10 @@ SOFTWARE.
 
         eval(s) {
             return this.n;
+        }
+
+        toString(d) {
+            return `(num: ${this.n.toString()})`;
         }
     }
 
@@ -467,6 +512,10 @@ SOFTWARE.
         eval(s) {
             return this.a1.eval(s) + this.a2.eval(s);
         }
+
+        toString(d) {
+            return `(add:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
+        }
     }
 
     class SubtractionExp {
@@ -477,6 +526,10 @@ SOFTWARE.
 
         eval(s) {
             return this.a1.eval(s) - this.a2.eval(s);
+        }
+
+        toString(d) {
+            return `(sub:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
         }
     }
 
@@ -489,17 +542,29 @@ SOFTWARE.
         eval(s) {
             return this.a1.eval(s) * this.a2.eval(s);
         }
+
+        toString(d) {
+            return `(prod:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
+        }
     }
 
     class TrueExp {
         eval(s) {
             return true;
         }
+
+        toString(d) {
+            return `(true)`;
+        }
     }
 
     class FalseExp {
         eval(s) {
             return false;
+        }
+
+        toString(d) {
+            return `(false)`;
         }
     }
 
@@ -511,6 +576,10 @@ SOFTWARE.
         eval(s) {
             return !(this.b.eval(s));
         }
+
+        toString(d) {
+            return `(not:\n${'\t'.repeat(d)}${this.b.toString(d+1)})`;
+        }
     }
 
     class EqualExp {
@@ -521,6 +590,10 @@ SOFTWARE.
 
         eval(s) {
             return this.a1.eval(s) === this.a2.eval(s);
+        }
+
+        toString(d) {
+            return `(eq:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
         }
     }
 
@@ -535,6 +608,10 @@ SOFTWARE.
             if (b) return b;
             else return this.b2.eval(s);
         }
+
+        toString(d) {
+            return `(or:\n${'\t'.repeat(d)}${this.b1.toString(d+1)},\n${'\t'.repeat(d)}${this.b2.toString(d+1)})`;
+        }
     }
 
     class BiggerThanExp {
@@ -546,6 +623,10 @@ SOFTWARE.
         eval(s) {
             return this.a1.eval(s) > this.a2.eval(s);
         }
+
+        toString(d) {
+            return `(bigger:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
+        }
     }
 
     class LeqExp {
@@ -556,6 +637,10 @@ SOFTWARE.
 
         eval(s) {
             return this.a1.eval(s) <= this.a2.eval(s);
+        }
+
+        toString(d) {
+            return `(leq:\n${'\t'.repeat(d)}${this.a1.toString(d+1)},\n${'\t'.repeat(d)}${this.a2.toString(d+1)})`;
         }
     }
 
