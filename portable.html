@@ -31,27 +31,58 @@ SOFTWARE.
  -->
  
 <body>
-      <div class="container">
-          <div class="row mt-4">
-              <h1 class="text-center">simpl - S/IMP interpreter</h1>
-          </div>
-          <div class="row">
-              <form action="/" method="post" enctype="text/plain">
-                  <div class="form-group">
-                      <label for="sourceCode">Input source code</label>
-                      <textarea class="form-control" name="sourceCode" id="sourceCode" rows="20"></textarea>
-                  </div>
-                  <input id="evaluation" type="text" class="form-control mt-2" placeholder="Results will appear here..." readonly>
-                  <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
-                  <div class="form-group mt-2">
-                    <label for="debug-tokens">Token debug information</label>
-                    <textarea class="form-control" name="debug-tokens" id="debug-tokens" rows="20" readonly></textarea>
-                    <label for="debug-tree">Tree debug information</label>
-                    <textarea class="form-control" name="debug-tree" id="debug-tree" rows="20" readonly></textarea>
-                  </div>
-              </form>
-          </div>
-      </div>
+    <div class="container">
+        <div class="row mt-4">
+            <h1 class="text-center">simpl - S/IMP interpreter</h1>
+        </div>
+        <div class="row">
+            <form action="/" method="post" enctype="text/plain">
+                <div class="form-group">
+                    <label for="sourceCode">Input source code</label>
+                    <textarea class="form-control" name="sourceCode" id="sourceCode" rows="15">
+n := 6;
+i := n;
+result := 0;
+while 0 <= i do (
+    result := result + i;
+    i := i - 1
+)
+                    </textarea>
+                </div>
+                <input id="evaluation" type="text" class="form-control mt-2" placeholder="Results will appear here..."
+                    readonly>
+                <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
+
+
+                <div class="mt-2">
+                    <span>Warnings</span>
+                    <div class="rounded border border-2 border-warning">
+                        <div class="m-3">
+                            <pre id="debug-warnings">Scanning, parsing and interpretation warnings will appear here</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <span>Tree</span>
+                    <div class="rounded border border-2 border-info">
+                        <div class="m-3">
+                            <pre id="debug-tree">The tree representing the input source will appear here</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <span>Tokens</span>
+                    <div class="rounded border border-2 border-info">
+                        <div class="m-3">
+                            <pre id="debug-tokens">Tokens read from the input source will appear here</pre>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
 
@@ -59,6 +90,7 @@ SOFTWARE.
     let submission = document.getElementById("sourceCode");
     let evaluation = document.getElementById("evaluation");
     let submit = document.getElementById("process");
+    let debug_area_warnings = document.getElementById("debug-warnings");
     let debug_area_tokens = document.getElementById("debug-tokens");
     let debug_area_tree = document.getElementById("debug-tree");
 
@@ -76,8 +108,8 @@ SOFTWARE.
             debug_tokens += token.toString() + "\n";
         }
         debug_tree = root.toString(1);
-        debug_area_tokens.value = debug_tokens;
-        debug_area_tree.value = debug_tree;
+        debug_area_tokens.innerText = debug_tokens;
+        debug_area_tree.innerText = debug_tree;
         evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
     }
 
