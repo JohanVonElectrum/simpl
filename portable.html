@@ -95,22 +95,28 @@ while 0 <= i do (
     let debug_area_tree = document.getElementById("debug-tree");
 
     submit.onclick = function () {
-        let source = submission.value;
-        let scanner = new Scanner(source);
-        let tokens = scanner.scanTokens();
-        let parser = new Parser(tokens);
-        let root = parser.parse();
-        let state = new State();
-        let value = root.eval(state);
-        let debug_tokens = "";
-        let debug_tree = "";
-        for (const token of tokens) {
-            debug_tokens += token.toString() + "\n";
+        try {
+            debug_area_warnings.innerText = "";
+            let source = submission.value;
+            let scanner = new Scanner(source);
+            let tokens = scanner.scanTokens();
+            let parser = new Parser(tokens);
+            let root = parser.parse();
+            let state = new State();
+            let value = root.eval(state);
+            let debug_tokens = "";
+            let debug_tree = "";
+            for (const token of tokens) {
+                debug_tokens += token.toString() + "\n";
+            }
+            debug_tree = root.toString(1);
+            debug_area_tokens.innerText = debug_tokens;
+            debug_area_tree.innerText = debug_tree;
+            evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
+        } catch (e) {
+            debug_area_warnings.innerText = e;
         }
-        debug_tree = root.toString(1);
-        debug_area_tokens.innerText = debug_tokens;
-        debug_area_tree.innerText = debug_tree;
-        evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
+        if (debug_area_warnings.innerText == "") debug_area_warnings.innerText = "No errors reported";
     }
 
     class Token {
@@ -226,7 +232,7 @@ while 0 <= i do (
                     } else if (this.isAlpha(c)) {
                         this.identifier();
                     } else {
-                        console.log("Unexpected: " + c);
+                        throw `[line ${this.line}] Unexpected: ` + c;
                     }
                     break;
             }
@@ -322,19 +328,19 @@ while 0 <= i do (
         assignmentStatement() {
             let ident = this.previous();
             let name = ident.lexeme;
-            this.consume(Token.TokenType.WALRUS, "expected walrus operator.");
+            this.consume(Token.TokenType.WALRUS, `[line ${this.tokens[this.current].line}] expected walrus operator`);
             return new AssignmentStmt(name, this.arithmeticExp());
         }
 
         ifStatement() {
             let booleanExp = this.booleanExp();
-            this.consume(Token.TokenType.THEN, "expected then after if.");
+            this.consume(Token.TokenType.THEN, `[line ${this.tokens[this.current].line}] expected then after if`);
             let ifTrue = this.programStatement();
-            this.consume(Token.TokenType.ELSE, "expected else after then.");
+            this.consume(Token.TokenType.ELSE, `[line ${this.tokens[this.current].line}] expected else after then`);
             let ifFalse;
             if (this.match(Token.TokenType.LEFT_PAREN)) {
                 ifFalse = this.programStatement();
-                this.consume(Token.TokenType.RIGHT_PAREN);
+                this.consume(Token.TokenType.RIGHT_PAREN, `[line ${this.tokens[this.current].line}] expected right paren after left paren`);
             }
             else ifFalse = this.programStatement();
             return new IfThenElseStmt(booleanExp, ifTrue, ifFalse);
@@ -342,11 +348,11 @@ while 0 <= i do (
 
         whileStatement() {
             let booleanExp = this.booleanExp();
-            this.consume(Token.TokenType.DO, "expected do after while.");
+            this.consume(Token.TokenType.DO, `[line ${this.tokens[this.current].line}] expected do after while`);
             let programStatement;
             if (this.match(Token.TokenType.LEFT_PAREN)) {
                 programStatement = this.programStatement();
-                this.consume(Token.TokenType.RIGHT_PAREN, "expected right paren after left paren.");
+                this.consume(Token.TokenType.RIGHT_PAREN, `[line ${this.tokens[this.current].line}] expected right paren after left paren`);
             }
             else programStatement = this.programStatement();
             return new WhileStmt(booleanExp, programStatement);
@@ -356,7 +362,7 @@ while 0 <= i do (
             let arithmeticExp = null;
             if (this.match(Token.TokenType.NUMBER)) arithmeticExp = new NumericExp(parseInt(this.previous().literal));
             else if (this.match(Token.TokenType.IDENTIFIER)) arithmeticExp = new VariableExp(this.previous().lexeme);
-            if (arithmeticExp == null) throw "expected arithmetic expression";
+            if (arithmeticExp == null) throw `[line ${this.tokens[this.current].line}] expected arithmetic expression`;
             if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.STAR)) {
                 switch (this.previous().type) {
                     case Token.TokenType.PLUS:
@@ -388,7 +394,7 @@ while 0 <= i do (
                     booleanExp = new BiggerThanExp(arithmeticExp, this.arithmeticExp());
                 }
             }
-            if (booleanExp == null) throw "expected boolean expression";
+            if (booleanExp == null) throw `[line ${this.tokens[this.current].line}] expected boolean expression`;
             if (this.match(Token.TokenType.OR)) booleanExp = new OrExp(booleanExp, this.booleanExp());
             return booleanExp;
         }
