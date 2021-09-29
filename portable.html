@@ -125,16 +125,16 @@ while 0 <= i do (
             IDENTIFIER: 2,
             PLUS: 3,
             MINUS: 4,
-            STAR: 5,
+            MULT: 5,
             TRUE: 6,
             FALSE: 7,
             EQUAL: 8,
             LESS_EQUAL: 9,
-            MORE: 10,
+            BIGGER: 10,
             NOT: 11,
             OR: 12,
             SKIP: 13,
-            WALRUS: 14,
+            ASSIGN: 14,
             SEMICOLON: 15,
             IF: 16,
             THEN: 17,
@@ -202,7 +202,7 @@ while 0 <= i do (
                 case '-': this.addToken(Token.TokenType.MINUS); break;
                 case '+': this.addToken(Token.TokenType.PLUS); break;
                 case ';': this.addToken(Token.TokenType.SEMICOLON); break;
-                case '*': this.addToken(Token.TokenType.STAR); break;
+                case '*': this.addToken(Token.TokenType.MULT); break;
                 case '!': this.addToken(Token.TokenType.NOT); break;
                 case '|':
                     if (this.match('|')) {
@@ -212,7 +212,7 @@ while 0 <= i do (
                 case '=': this.addToken(Token.TokenType.EQUAL); break;
                 case ':':
                     if (this.match('=')) {
-                        this.addToken(Token.TokenType.WALRUS);
+                        this.addToken(Token.TokenType.ASSIGN);
                     }
                     break;
                 case '<':
@@ -220,7 +220,7 @@ while 0 <= i do (
                         this.addToken(Token.TokenType.LESS_EQUAL);
                     }
                     break;
-                case '>': this.addToken(Token.TokenType.MORE); break;
+                case '>': this.addToken(Token.TokenType.BIGGER); break;
                 case ' ':
                 case '\r':
                 case '\t':
@@ -328,7 +328,7 @@ while 0 <= i do (
         assignmentStatement() {
             let ident = this.previous();
             let name = ident.lexeme;
-            this.consume(Token.TokenType.WALRUS, `[line ${this.tokens[this.current].line}] expected walrus operator`);
+            this.consume(Token.TokenType.ASSIGN, `[line ${this.tokens[this.current].line}] expected assign operator`);
             return new AssignmentStmt(name, this.arithmeticExp());
         }
 
@@ -363,7 +363,7 @@ while 0 <= i do (
             if (this.match(Token.TokenType.NUMBER)) arithmeticExp = new NumericExp(parseInt(this.previous().literal));
             else if (this.match(Token.TokenType.IDENTIFIER)) arithmeticExp = new VariableExp(this.previous().lexeme);
             if (arithmeticExp == null) throw `[line ${this.tokens[this.current].line}] expected arithmetic expression`;
-            if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.STAR)) {
+            if (this.match(Token.TokenType.PLUS, Token.TokenType.MINUS, Token.TokenType.MULT)) {
                 switch (this.previous().type) {
                     case Token.TokenType.PLUS:
                         arithmeticExp = new AdditionExp(arithmeticExp, this.arithmeticExp());
@@ -371,7 +371,7 @@ while 0 <= i do (
                     case Token.TokenType.MINUS:
                         arithmeticExp = new SubtractionExp(arithmeticExp, this.arithmeticExp());
                         break;
-                    case Token.TokenType.STAR:
+                    case Token.TokenType.MULT:
                         arithmeticExp = new ProductExp(arithmeticExp, this.arithmeticExp());
                         break;
                 }
@@ -390,7 +390,7 @@ while 0 <= i do (
                     booleanExp = new EqualExp(arithmeticExp, this.arithmeticExp());
                 } else if (this.match(Token.TokenType.LESS_EQUAL)) {
                     booleanExp = new LeqExp(arithmeticExp, this.arithmeticExp());
-                } else if (this.match(Token.TokenType.MORE)) {
+                } else if (this.match(Token.TokenType.BIGGER)) {
                     booleanExp = new BiggerThanExp(arithmeticExp, this.arithmeticExp());
                 }
             }
