@@ -49,10 +49,17 @@ while 0 <= i do (
 )
                     </textarea>
                 </div>
-                <input id="evaluation" type="text" class="form-control mt-2" placeholder="Results will appear here..."
-                    readonly>
+
                 <button id="process" type="button" class="btn btn-primary mt-2">Submit!</button>
 
+                <div class="mt-2">
+                    <span>State</span>
+                    <div class="rounded border border-2 border-primary">
+                        <div class="m-3">
+                            <pre id="evaluation">Results will appear here...</pre>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="mt-2">
                     <span>Warnings</span>
@@ -96,7 +103,10 @@ while 0 <= i do (
 
     submit.onclick = function () {
         try {
+            evaluation.innerText = "";
             debug_area_warnings.innerText = "";
+            debug_area_tree.innerText = "";
+            debug_area_tokens.innerText = "";
             let source = submission.value;
             let scanner = new Scanner(source);
             let tokens = scanner.scanTokens();
@@ -112,11 +122,20 @@ while 0 <= i do (
             debug_tree = root.toString(1);
             debug_area_tokens.innerText = debug_tokens;
             debug_area_tree.innerText = debug_tree;
-            evaluation.setAttribute("placeholder", "result := " + value.lookup("result"));
+            let name_value = "";
+            value.entries()
+                .sort(function(e1, e2) {if (e1[0] == "result") return -1; else return 1})
+                .forEach(pair => {
+                    name_value += pair[0] + " := " + pair[1] + "\n";
+                });
+            evaluation.innerText = name_value;
         } catch (e) {
             debug_area_warnings.innerText = e;
         }
+        if (evaluation.innerText == "") evaluation.innerText = "No information available"
         if (debug_area_warnings.innerText == "") debug_area_warnings.innerText = "No errors reported";
+        if (debug_area_tree.innerText == "") debug_area_tree.innerText = "No information available"
+        if (debug_area_tokens.innerText == "") debug_area_tokens.innerText = "No information available"
     }
 
     class Token {
@@ -692,11 +711,15 @@ while 0 <= i do (
         }
 
         contains(name) {
-            return this.state.contains(name);
+            return this.state.hasOwnProperty(name);
         }
 
         keys() {
-            return this.state.keys();
+            return Object.keys(this.state);
+        }
+
+        entries() {
+            return Object.entries(this.state);
         }
 
         setNewBinding(name, n) {
