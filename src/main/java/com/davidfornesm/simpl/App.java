@@ -85,7 +85,12 @@ public abstract class App
         System.out.println("program: " + program.toString());
     }
 
+    //TODO: proper experimental toggle with arguments
     private static void compileSourceCode(ProgramStatement program) {
+        System.out.println("====================");
+        System.out.println("Experimental Feature");
+        System.out.println("====================");
+
         State compileState = new State();
         String compileSource = program.compile(compileState);
         StringBuilder compileVars = new StringBuilder();
