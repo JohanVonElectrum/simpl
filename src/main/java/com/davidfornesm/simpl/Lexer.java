@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static com.davidfornesm.simpl.Token.TokenType.*;
 
-public class Scanner {
+public class Lexer {
     private final String source;
     private final List<Token> tokens = new ArrayList<>();
     private static final Map<String, Token.TokenType> keywords;
@@ -29,7 +29,7 @@ public class Scanner {
     int current = 0;
     int line = 1;
 
-    Scanner(String source) {
+    Lexer(String source) {
         this.source = source;
     }
 
@@ -54,22 +54,19 @@ public class Scanner {
             case '!':
                 addToken(NOT); break;
             case '|':
-                if (match('|')) {
+                if (match('|'))
                     addToken(OR);
-                }
                 break;
             case '=':
                 addToken(EQUAL);
                 break;
             case ':':
-                if (match('=')) {
+                if (match('='))
                     addToken(WALRUS);
-                }
                 break;
             case '<':
-                if (match('=')) {
+                if (match('='))
                     addToken(LESS_EQUAL);
-                }
                 break;
             case '>':
                 addToken(MORE);
@@ -82,31 +79,31 @@ public class Scanner {
                 line++;
                 break;
             default:
-                if (isDigit(c)) {
+                if (isDigit(c))
                     number();
-                } else if (isAlpha(c)) {
+                else if (isAlpha(c))
                     identifier();
-                } else {
+                else
                     App.error(line, "Unexpected character: " + c + ".");
-                }
-                break;
         }
     }
 
     private boolean match(char expected) {
-        if (isAtEnd()) return false;
-        if (source.charAt(current) != expected) return false;
+        if (isAtEnd() || source.charAt(current) != expected)
+            return false;
         current++;
         return true;
     }
 
     private char peek() {
-        if (isAtEnd()) return '\0';
+        if (isAtEnd())
+            return '\0';
         return source.charAt(current);
     }
 
     private char peekNext() {
-        if (current + 1 >= source.length()) return '\0';
+        if (current + 1 >= source.length())
+            return '\0';
         return source.charAt(current + 1);
     }
 
@@ -136,7 +133,8 @@ public class Scanner {
         while (isAlphaNumeric(peek())) advance();
         String text = source.substring(start, current);
         Token.TokenType type = keywords.get(text);
-        if (type == null) type = IDENTIFIER;
+        if (type == null)
+            type = IDENTIFIER;
         addToken(type);
     }
 

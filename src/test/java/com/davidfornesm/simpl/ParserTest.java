@@ -18,8 +18,8 @@ public class ParserTest extends TestCase {
                 "then while result <= 28" +
                 "do (result := result + 1); " +
                 "else (); ";
-        Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        Lexer lexer = new Lexer(source);
+        List<Token> tokens = lexer.scanTokens();
         Parser parser = new Parser(tokens);
         ProgramStatement program = parser.parse();
         State state = new State();
@@ -42,8 +42,8 @@ public class ParserTest extends TestCase {
                 "); \n" +
                 "result := 1000 + result; \n" +
                 "skip";
-        Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        Lexer lexer = new Lexer(source);
+        List<Token> tokens = lexer.scanTokens();
         Parser parser = new Parser(tokens);
         ProgramStatement program = parser.parse();
         State state = new State();

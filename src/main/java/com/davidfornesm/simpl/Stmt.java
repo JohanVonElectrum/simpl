@@ -36,7 +36,7 @@ abstract class ProgramStatement {
 
         public String compile(State s) {
             s.setNewBinding(x, 1);
-            return x + " = " + a.compile(s) + ";";
+            return x + " = " + a.compile(s) + ";\n";
         }
 
         @Override
@@ -93,13 +93,19 @@ abstract class ProgramStatement {
         }
 
         public State eval(State s) {
-            if (b.eval(s)) return c1.eval(s);
-            else return c2.eval(s);
+            if (b.eval(s))
+                return c1.eval(s);
+            else
+                return c2.eval(s);
         }
 
         @Override
         public String compile(State s) {
-            return "if (" + b.compile(s) + ") {" + c1.compile(s) + "} else {" + c2.compile(s) + "}";
+            String body = c1.compile(s);
+            String elseBody = c2.compile(s);
+            if (body == null || body.isEmpty())
+                return "";
+            return "if (" + b.compile(s) + ") {\n\t" + body + "\n\r}\n" + (elseBody == null || elseBody.isEmpty() ? "" : " else {\n\t" + elseBody + "\n\r}\n");
         }
     }
 
@@ -119,13 +125,18 @@ abstract class ProgramStatement {
         }
 
         public State eval(State s) {
-            if (b.eval(s)) return this.eval(c.eval(s));
-            else return s;
+            if (b.eval(s))
+                return this.eval(c.eval(s));
+            else
+                return s;
         }
 
         @Override
         public String compile(State s) {
-            return "while (" + b.compile(s) + ") {" + c.compile(s) + "}";
+            String body = c.compile(s);
+            if (body == null || body.isEmpty())
+                return "";
+            return "while (" + b.compile(s) + ") {\n\t" + body + "\n\r}\n";
         }
     }
 }

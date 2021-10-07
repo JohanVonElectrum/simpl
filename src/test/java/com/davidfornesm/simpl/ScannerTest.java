@@ -13,8 +13,8 @@ public class ScannerTest extends TestCase {
         String source = "123 abc + - * true false " +
                 "= <= > ! || skip := ; if then else " +
                 "while do ( )";
-        Scanner scanner = new Scanner(source);
-        List<Token> tokens = scanner.scanTokens();
+        Lexer lexer = new Lexer(source);
+        List<Token> tokens = lexer.scanTokens();
         List<Token> expected_tokens = new ArrayList<>();
         expected_tokens.add(new Token(NUMBER, "123", 123, 1));
         expected_tokens.add(new Token(IDENTIFIER, "abc", null, 1));

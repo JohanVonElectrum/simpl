@@ -4,11 +4,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 class State {
-    private final HashMap<String, Integer> state;
-
-    public State() {
-        state = new HashMap<>();
-    }
+    private final HashMap<String, Integer> state = new HashMap<>();
 
     Integer lookup(String name) {
         return state.get(name);
@@ -18,7 +14,7 @@ class State {
         return state.containsKey(name);
     }
 
-    Set<String> keys () {
+    Set<String> keys() {
         return state.keySet();
     }
 
